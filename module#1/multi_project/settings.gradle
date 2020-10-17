@@ -1,8 +1,2 @@
 rootProject.name = 'multi_project'
-include 'core'
-include 'app'
-include 'task1_1'
-project(':task1_1').projectDir = new File('/Users/angener/Desktop/epam/MJC/project/module#1/task1_1')
-include 'core'
-include 'app'
-
+include 'core','app'
