@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @Transactional
-public class GiftCertificateDaoImplTest extends DbUnitConfig {
+public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
     @Autowired
     private GiftCertificateDao giftCertificateDao;
     private GiftCertificate giftCertificate;

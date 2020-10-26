@@ -18,7 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
-public class TagDaoImpTest extends DbUnitConfig {
+public class TagDaoImpIntegrationTest extends DbUnitConfig {
     @Autowired
     private TagDao tagDao;
 
