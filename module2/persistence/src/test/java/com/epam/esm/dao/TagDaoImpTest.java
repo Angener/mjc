@@ -9,6 +9,7 @@ import org.dbunit.dataset.xml.FlatXmlDataSetBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,16 @@ public class TagDaoImpTest extends DbUnitConfig {
 
         Assertion.assertEquals(expectedTable, factTable);
         assertEquals(expectedTable.getRowCount(), tags.size());
+    }
+
+    @Test
+    public void saveTest() throws Exception {
+        Tag tag = new Tag("third tag");
+        tagDao.save(tag);
+        Tag tagWithNulName = new Tag();
+        assertEquals(tagDao.getAll().size(), 3);
+        assertThrows(NullPointerException.class, () -> tagDao.save(null));
+        assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNulName));
     }
 
     @Test

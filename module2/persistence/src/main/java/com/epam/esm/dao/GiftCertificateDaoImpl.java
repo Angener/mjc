@@ -2,8 +2,9 @@ package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,13 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
 @NoArgsConstructor
+@Repository
 public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
-    private JdbcTemplate jdbcTemplate;
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private SimpleJdbcInsert simpleJdbcInsert;
+    @Autowired private JdbcTemplate jdbcTemplate;
+    @Autowired private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @Autowired @Qualifier("tag_giftCertificate") private SimpleJdbcInsert simpleJdbcInsert;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -48,7 +50,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
                     Map<String, Object> parameter = new HashMap<>();
                     parameter.put("tag_name", tag.getName());
                     parameter.put("giftCertificate_name", certificate.getName());
-                    simpleJdbcInsert.withTableName("tag_giftCertificate").execute(parameter);
+                    simpleJdbcInsert.execute(parameter);
                 });
     }
 
