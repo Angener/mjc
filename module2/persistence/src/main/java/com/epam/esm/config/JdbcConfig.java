@@ -31,32 +31,32 @@ public class JdbcConfig {
     @Value("${postgres.maxPoolSize}") private int maxPoolSize;
 
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+    public JdbcTemplate getJdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
+    public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new NamedParameterJdbcTemplate((jdbcTemplate));
     }
 
     @Bean("tag")
-    public SimpleJdbcInsert tag(JdbcTemplate jdbcTemplate) {
+    public SimpleJdbcInsert getTagTableSimpleJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag");
     }
 
     @Bean("tag_giftCertificate")
-    public SimpleJdbcInsert giftCertificate(JdbcTemplate jdbcTemplate) {
+    public SimpleJdbcInsert getTag_GiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_giftCertificate");
     }
 
     @Bean
-    public DataSource dataSource(HikariConfig config) {
+    public DataSource getDataSource(HikariConfig config) {
         return new HikariDataSource(config);
     }
 
     @Bean
-    public HikariConfig hikariConfig() {
+    public HikariConfig getHikariConfig() {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(driverClass);
         config.setJdbcUrl(databaseUrl);
@@ -68,7 +68,7 @@ public class JdbcConfig {
     }
 
     @Bean
-    public DataSourceTransactionManager dataSourceTransactionManager(DataSource dataSource) {
+    public DataSourceTransactionManager getDataSourceTransactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
 }

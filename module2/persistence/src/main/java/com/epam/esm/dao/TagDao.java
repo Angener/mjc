@@ -8,5 +8,5 @@ public interface TagDao {
      List<Tag> getAll ();
      Tag get(String name);
      void save(Tag tag);
-     void delete(Tag t);
+     void delete(Tag tag);
 }
