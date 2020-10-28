@@ -12,5 +12,6 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.16'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
     compile group: 'org.springframework', name: 'spring-context', version: '5.2.9.RELEASE'
+    compile group: 'com.google.guava', name: 'guava', version: '30.0-jre'
     implementation project(':persistence')
 }

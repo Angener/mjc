@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,13 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
     }
 
     @Test
+    public void getTest() {
+        Tag tag = tagDao.get("first tag");
+        assertEquals("first tag", tag.getName());
+        assertThrows(EmptyResultDataAccessException.class, () -> tagDao.get(null));
+    }
+
+    @Test
     public void saveTest() throws Exception {
         Tag tag = new Tag("third tag");
         tagDao.save(tag);
@@ -52,13 +60,8 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
         assertEquals(tagDao.getAll().size(), 3);
         assertThrows(NullPointerException.class, () -> tagDao.save(null));
         assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNulName));
-    }
-
-    @Test
-    public void getTest() {
-        Tag tag = tagDao.get("first tag");
-        assertEquals("first tag", tag.getName());
-        assertThrows(EmptyResultDataAccessException.class, () -> tagDao.get(null));
+        tagWithNulName.setName("first tag");
+        assertThrows(DuplicateKeyException.class, () -> tagDao.save(tagWithNulName));
     }
 
     @Test

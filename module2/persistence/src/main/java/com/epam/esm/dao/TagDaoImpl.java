@@ -35,7 +35,7 @@ public class TagDaoImpl implements TagDao {
     public Tag get(String name) {
         return namedParameterJdbcTemplate.queryForObject(
                 "SELECT * FROM tag WHERE name = :name",
-                new MapSqlParameterSource(Collections.singletonMap("name", name)),
+                Collections.singletonMap("name", name),
                 (rs, mapRow) -> new Tag(rs.getString("name")));
     }
 
