@@ -7,6 +7,6 @@ import java.util.List;
 public interface TagService {
     List<Tag> getAll ();
     Tag get(String name);
-    void save(String name);
+    void save(Tag tag);
     void delete(Tag tag);
 }

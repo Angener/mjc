@@ -3,7 +3,6 @@ package com.epam.esm.service;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.entity.Tag;
 import com.epam.esm.util.BeanFactory;
-import com.google.common.base.Preconditions;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,14 +25,12 @@ public class TagServiceImpl implements TagService{
 
     @Override
     public Tag get(String name) {
-        Preconditions.checkNotNull(name);
-        return Preconditions.checkNotNull(tagDao.get(name));
+        return tagDao.get(name);
     }
 
     @Override
-    public void save(String name) {
-
-
+    public void save(Tag tag) {
+        tagDao.save(tag);
     }
 
     @Override

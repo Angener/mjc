@@ -49,16 +49,15 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
     public void getTest() {
         Tag tag = tagDao.get("first tag");
         assertEquals("first tag", tag.getName());
-        assertThrows(EmptyResultDataAccessException.class, () -> tagDao.get(null));
+        assertThrows(EmptyResultDataAccessException.class, () -> tagDao.get("ninth tag"));
     }
 
     @Test
-    public void saveTest() throws Exception {
+    public void saveTest() {
         Tag tag = new Tag("third tag");
         tagDao.save(tag);
         Tag tagWithNulName = new Tag();
         assertEquals(tagDao.getAll().size(), 3);
-        assertThrows(NullPointerException.class, () -> tagDao.save(null));
         assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNulName));
         tagWithNulName.setName("first tag");
         assertThrows(DuplicateKeyException.class, () -> tagDao.save(tagWithNulName));
@@ -69,6 +68,5 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
         Tag tag = new Tag("first tag");
         tagDao.delete(tag);
         assertEquals(tagDao.getAll().size(), 1);
-        assertThrows(IllegalArgumentException.class, () -> tagDao.delete(null));
     }
 }

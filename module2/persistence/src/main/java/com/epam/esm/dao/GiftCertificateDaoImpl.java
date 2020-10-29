@@ -58,7 +58,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     public GiftCertificate get(String certificateName) {
         return namedParameterJdbcTemplate.queryForObject(
                 "SELECT * FROM giftCertificate WHERE name = :name",
-                new MapSqlParameterSource(Collections.singletonMap("name", certificateName)),
+                Collections.singletonMap("name", certificateName),
                 mapGiftCertificate());
     }
 
