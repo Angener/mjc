@@ -5,7 +5,6 @@ import com.epam.esm.entity.Tag;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -31,7 +30,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void save(GiftCertificate certificate, List<Tag> tags) throws DataIntegrityViolationException {
+    public void save(GiftCertificate certificate, List<Tag> tags) {
         saveGiftCertificate(certificate);
         saveReferencesBetweenCertificatesAndTags(get(certificate.getName()), tags);
     }

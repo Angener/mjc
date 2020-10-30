@@ -7,7 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.List;
 
 public interface GiftCertificateDao {
-    void save(GiftCertificate certificate, List<Tag> tags) throws DataIntegrityViolationException;
+    void save(GiftCertificate certificate, List<Tag> tags);
 
     GiftCertificate get(String certificateName);
 
