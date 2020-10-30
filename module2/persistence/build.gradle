@@ -26,5 +26,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
-//    exclude '**/*IntegrationTest.*'
+    exclude '**/*IntegrationTest.*'
 }
