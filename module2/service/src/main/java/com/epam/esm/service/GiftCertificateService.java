@@ -15,7 +15,7 @@ public interface GiftCertificateService {
 
     List<GiftCertificate> getByPartName(String partName);
 
-    void update(GiftCertificate certificate, String[] fields, String updatableName);
+    void update(GiftCertificate certificate, String[] fields);
 
     void delete(GiftCertificate certificate);
 }

@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.GiftCertificateDao;
+import com.epam.esm.dao.TagDao;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,15 @@ import java.util.List;
 
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService{
-    @Autowired
-    GiftCertificateDao giftCertificateDao;
+
+    @Autowired GiftCertificateDao giftCertificateDao;
+    @Autowired TagDao tagDao;
+
+
+
+                                    //TODO save tags when save and update
+
+
     @Override
     public void save(GiftCertificate certificate, List<Tag> tags) throws DataIntegrityViolationException {
         giftCertificateDao.save(certificate, tags);
@@ -34,8 +42,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService{
     }
 
     @Override
-    public void update(GiftCertificate certificate, String[] fields, String updatableName) {
-        giftCertificateDao.update(certificate, fields, updatableName);
+    public void update(GiftCertificate certificate, String[] fields) {
+        giftCertificateDao.update(certificate, fields);
     }
 
     @Override
