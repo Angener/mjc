@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @NoArgsConstructor
 @Repository
@@ -27,7 +26,7 @@ public class TagDaoImpl implements TagDao {
     public List<Tag> getAll() {
         return jdbcTemplate.query(
                 "SELECT * FROM tag",
-                (rs, mapRow) -> new Tag(rs.getString("name")));
+                (rs, mapRow) -> new Tag(rs.getLong("id"), rs.getString("name")));
     }
 
     @Override
@@ -35,19 +34,19 @@ public class TagDaoImpl implements TagDao {
         return namedParameterJdbcTemplate.queryForObject(
                 "SELECT * FROM tag WHERE name = :name",
                 Collections.singletonMap("name", name),
-                (rs, mapRow) -> new Tag(rs.getString("name")));
+                (rs, mapRow) -> new Tag(rs.getLong("id"), rs.getString("name")));
     }
 
     @Override
     public void save(Tag tag) {
-        Map<String, Object> parameter = Collections.singletonMap("name", tag.getName());
-        simpleJdbcInsert.execute(parameter);
+        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name)",
+                new BeanPropertySqlParameterSource(tag));
     }
 
     @Override
     public void delete(Tag tag) {
         namedParameterJdbcTemplate.update(
-                "DELETE FROM tag WHERE name = :name",
+                "DELETE FROM tag WHERE id = :id",
                 new BeanPropertySqlParameterSource(tag));
     }
 }

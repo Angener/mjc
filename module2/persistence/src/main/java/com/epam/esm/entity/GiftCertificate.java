@@ -12,6 +12,7 @@ import java.time.Instant;
 @AllArgsConstructor
 public class GiftCertificate {
 
+    private long id;
     private String name;
     private String description;
     private BigDecimal price;

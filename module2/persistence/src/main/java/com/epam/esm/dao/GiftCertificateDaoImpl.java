@@ -9,7 +9,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -34,7 +33,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Transactional(propagation = Propagation.REQUIRED)
     public void save(GiftCertificate certificate, List<Tag> tags) throws DataIntegrityViolationException {
         saveGiftCertificate(certificate);
-        saveTags(certificate, tags);
+        saveReferencesBetweenCertificatesAndTags(get(certificate.getName()), tags);
     }
 
     private void saveGiftCertificate(GiftCertificate certificate) {
@@ -44,12 +43,12 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
                 new BeanPropertySqlParameterSource(certificate));
     }
 
-    private void saveTags(GiftCertificate certificate, List<Tag> tags) {
+    private void saveReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
         tags.forEach(
                 tag -> {
                     Map<String, Object> parameter = new HashMap<>();
-                    parameter.put("tag_name", tag.getName());
-                    parameter.put("giftCertificate_name", certificate.getName());
+                    parameter.put("tag_id", tag.getId());
+                    parameter.put("giftCertificate_id", certificate.getId());
                     simpleJdbcInsert.execute(parameter);
                 });
     }
@@ -64,6 +63,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private RowMapper<GiftCertificate> mapGiftCertificate() {
         return (rs, rowNum) -> new GiftCertificate(
+                rs.getLong("id"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getBigDecimal("price"),
@@ -80,10 +80,12 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String getSqlQueryGettingCertificatesFromDatabase(String tagName) {
-        return "SELECT gc.name, gc.description, gc.price, gc.createDate, gc.lastUpdateDate, gc.duration " +
-                "FROM giftCertificate gc JOIN tag_giftCertificate tgc " +
-                "ON gc.name = tgc.giftCertificate_name " +
-                "WHERE tgc.tag_name = '" + tagName + "'";
+        return "SELECT gc.id, gc.name, gc.description, gc.price, " +
+                "gc.createDate, gc.lastUpdateDate, gc.duration " +
+                "FROM giftCertificate gc " +
+                "JOIN tag_giftCertificate tgc ON gc.id = tgc.giftCertificate_id " +
+                "JOIN tag ON tag.id = tgc.tag_id " +
+                "WHERE tag.name='" + tagName + "';";
     }
 
     @Override
@@ -95,17 +97,17 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public void update(GiftCertificate certificate, String[] fields, String updatableName) {
+    public void update(GiftCertificate certificate, String[] fields) {
         namedParameterJdbcTemplate.update(
-                getUpdatableSqlQuery(fields, updatableName),
+                getUpdatableSqlQuery(fields, certificate),
                 new BeanPropertySqlParameterSource(certificate));
     }
 
-    private String getUpdatableSqlQuery(String[] fields, String updatableName) {
+    private String getUpdatableSqlQuery(String[] fields, GiftCertificate certificate) {
         return "UPDATE giftCertificate " +
                 "SET " + getUpdatableParameters(fields) +
                 ", lastUpdateDate = CURRENT_TIMESTAMP " +
-                "WHERE name = '" + updatableName + "';";
+                "WHERE id = '" + certificate.getId() + "';";
     }
 
     private String getUpdatableParameters(String[] fields) {
@@ -122,7 +124,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public void delete(GiftCertificate certificate) {
         namedParameterJdbcTemplate.update(
-                "DELETE FROM giftCertificate WHERE name = :name",
+                "DELETE FROM giftCertificate WHERE id = :id",
                 new BeanPropertySqlParameterSource(certificate));
     }
 }

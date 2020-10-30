@@ -28,7 +28,7 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
         super.setUp();
         beforeData = new FlatXmlDataSetBuilder().build(
                 Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("databaseDataset.xml"));
+                        .getResourceAsStream("giftCertificateDataset.xml"));
         tester.setDataSet(beforeData);
         tester.onSetup();
     }
@@ -54,19 +54,22 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
 
     @Test
     public void saveTest() {
-        Tag tag = new Tag("third tag");
+        Tag tag = new Tag();
+        tag.setName("third tag");
         tagDao.save(tag);
-        Tag tagWithNulName = new Tag();
+        Tag tagWithNullName = new Tag();
+
         assertEquals(tagDao.getAll().size(), 3);
-        assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNulName));
-        tagWithNulName.setName("first tag");
-        assertThrows(DuplicateKeyException.class, () -> tagDao.save(tagWithNulName));
+        assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNullName));
+        tagWithNullName.setName("third tag");
+        assertThrows(DuplicateKeyException.class, () -> tagDao.save(tagWithNullName));
     }
 
     @Test
-    public void deleteTest(){
-        Tag tag = new Tag("first tag");
+    public void deleteTest() {
+        System.out.println(tagDao.getAll());
+        Tag tag = new Tag(2, "second tag");
         tagDao.delete(tag);
-        assertEquals(tagDao.getAll().size(), 1);
+        assertEquals(1, tagDao.getAll().size());
     }
 }

@@ -13,8 +13,11 @@ import java.io.FileOutputStream;
 /**
  * Creates simple dataset to test something
  */
-public final class DatabaseXmlExporter {
+final class DatabaseXmlExporter {
     private static ApplicationContext context;
+    private static final String TAG_TABLE_SQL_QUERY = "SELECT * FROM tag";
+    private static final String GIFT_CERTIFICATE_TABLE_SQL_QUERY = "SELECT * FROM giftCertificate";
+    private static final String TAG_GIFT_CERTIFICATE_TABLE_SQL_QUERY = "SELECT * FROM tag_giftCertificate";
 
     private DatabaseXmlExporter() {
     }
@@ -25,21 +28,23 @@ public final class DatabaseXmlExporter {
     }
 
     private static void exportDataSetsToXml() throws Exception {
-        exportTable("tag", "SELECT * FROM tag", "tags.xml");
-        exportTable("giftCertificate",
-                "SELECT * FROM giftCertificate", "giftCertificate.xml");
-        exportTable("tag_giftCertificate",
-                "SELECT * FROM tag_giftCertificate", "tag_giftCertificate.xml");
+        QueryDataSet queryDataSet = getQueryDataSet();
+        setDataSets(queryDataSet);
+        export(queryDataSet);
     }
 
-    private static void exportTable(String tableName, String sqlQuery, String filename) throws Exception {
-        QueryDataSet queryDataSet = getQueryDataSet();
-        queryDataSet.addTable(tableName, sqlQuery);
-        FlatXmlDataSet.write(queryDataSet, new FileOutputStream(filename));
+    private static void setDataSets(QueryDataSet queryDataSet) throws Exception {
+        queryDataSet.addTable("tag", TAG_TABLE_SQL_QUERY);
+        queryDataSet.addTable("giftCertificate", GIFT_CERTIFICATE_TABLE_SQL_QUERY);
+        queryDataSet.addTable("tag_giftCertificate", TAG_GIFT_CERTIFICATE_TABLE_SQL_QUERY);
+    }
+
+    private static void export(QueryDataSet queryDataSet) throws Exception {
+        FlatXmlDataSet.write(queryDataSet, new FileOutputStream("giftCertificateDataSet.xml"));
     }
 
     private static QueryDataSet getQueryDataSet() throws Exception {
-        DataSource dataSource = (DataSource) context.getBean("dataSource");
+        DataSource dataSource = (DataSource) context.getBean("getDataSource");
         return new QueryDataSet(new DatabaseConnection(dataSource.getConnection()));
     }
 }

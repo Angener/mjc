@@ -50,7 +50,7 @@ public class DbUnitConfig extends DBTestCase {
                 properties.getProperty("postgres.username"));
         System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_PASSWORD,
                 properties.getProperty("postgres.password"));
-        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_SCHEMA, "esm");
+        System.setProperty(PropertiesBasedJdbcDatabaseTester.DBUNIT_SCHEMA, "giftCertificate");
     }
 
     @Override

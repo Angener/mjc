@@ -38,20 +38,20 @@ public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
         super.setUp();
         beforeData = new FlatXmlDataSetBuilder().build(
                 Thread.currentThread().getContextClassLoader()
-                        .getResourceAsStream("databaseDataset.xml"));
+                        .getResourceAsStream("giftCertificateDataset.xml"));
         tester.setDataSet(beforeData);
         tester.onSetup();
         initFields();
 
     }
 
-    private void initFields(){
+    private void initFields() {
         giftCertificate = new GiftCertificate();
         giftCertificate.setName("name");
         giftCertificate.setDescription("description");
         giftCertificate.setPrice(new BigDecimal("23.2"));
         giftCertificate.setDuration(3);
-        tags = Collections.singletonList(new Tag("first tag"));
+        tags = Collections.singletonList(new Tag(1, "first tag"));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
     }
 
     @Test
-    public void getTest(){
+    public void getTest() {
         String name = "first";
         GiftCertificate giftCertificate = giftCertificateDao.get(name);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
@@ -86,77 +86,68 @@ public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
         assertEquals("first", giftCertificate.getName());
         assertEquals("first gift card", giftCertificate.getDescription());
         assertEquals(new BigDecimal("123.20"), giftCertificate.getPrice());
-        assertEquals("10/23/2020",
+        assertEquals("10/30/2020",
                 giftCertificate.getCreateDate().atZone(ZoneId.of("GMT+3")).format(formatter));
-        assertEquals("10/23/2020",
+        assertEquals("10/30/2020",
                 giftCertificate.getLastUpdateDate().atZone(ZoneId.of("GMT+3")).format(formatter));
         assertEquals(12, giftCertificate.getDuration());
         assertThrows(EmptyResultDataAccessException.class, () -> giftCertificateDao.get(null));
     }
 
     @Test
-    public void getByTagNameTest(){
+    public void getByTagNameTest() {
         assertEquals(1, giftCertificateDao.getByTagName("second tag").size());
     }
 
     @Test
-    public void getByPartNameOrDescriptionTest(){
+    public void getByPartNameOrDescriptionTest() {
         assertEquals(2, giftCertificateDao.getByPartName("ir").size());
     }
 
     @Test
-    public void updateTest(){
+    public void updateTest() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-        String updatableName = "fifth";
         String[] fields = {"name", "description", "price", "duration"};
-        GiftCertificate updatableDetails = new GiftCertificate();
-        updatableDetails.setName("sixth");
-        updatableDetails.setDescription("sixth gift card");
-        updatableDetails.setPrice(new BigDecimal("123123123.09"));
-        updatableDetails.setDuration(223);
-        giftCertificateDao.update(updatableDetails, fields, updatableName);
+        GiftCertificate updatableCertificate = new GiftCertificate();
+        updatableCertificate.setId(5);
+        updatableCertificate.setName("sixth");
+        updatableCertificate.setDescription("sixth gift card");
+        updatableCertificate.setPrice(new BigDecimal("123123123.09"));
+        updatableCertificate.setDuration(223);
+        giftCertificateDao.update(updatableCertificate, fields);
         GiftCertificate testCertificate = giftCertificateDao.get("sixth");
 
         assertEquals(5, giftCertificateDao.getByTagName("first tag").size());
         assertEquals("sixth", testCertificate.getName());
         assertEquals("sixth gift card", testCertificate.getDescription());
         assertEquals(new BigDecimal("123123123.09"), testCertificate.getPrice());
-        assertEquals("10/23/2020",
+        assertEquals("10/30/2020",
                 testCertificate.getCreateDate().atZone(ZoneId.of("GMT+3")).format(formatter));
-        assertEquals( Instant.now().atZone(ZoneId.of("GMT+3")).format(formatter),
+        assertEquals(Instant.now().atZone(ZoneId.of("GMT+3")).format(formatter),
                 testCertificate.getLastUpdateDate().atZone(ZoneId.of("GMT+3")).format(formatter));
         assertEquals(223, testCertificate.getDuration());
     }
 
     @Test
-    public void updateThrowsNpe(){
-        String updatableName = "fifth";
+    public void updateThrowsNpe() {
         String[] fields = {"name"};
-        GiftCertificate updatableDetails = new GiftCertificate();
-
-        assertThrows(IllegalArgumentException.class,
-                () -> giftCertificateDao.update(null, fields, updatableName));
-        assertThrows(DataIntegrityViolationException.class,
-                () -> giftCertificateDao.update(updatableDetails, fields, updatableName));
-
-        updatableDetails.setName("first");
+        GiftCertificate updatableCertificate = new GiftCertificate();
+        updatableCertificate.setId(5);
+        updatableCertificate.setName("first");
 
         assertThrows(DuplicateKeyException.class,
-                () -> giftCertificateDao.update(updatableDetails, fields, updatableName));
+                () -> giftCertificateDao.update(updatableCertificate, fields));
 
-        updatableDetails.setName("sixth");
+        updatableCertificate.setName("sixth");
         fields[0] = "awd";
-
-        assertThrows(NullPointerException.class,
-                () -> giftCertificateDao.update(updatableDetails, null, updatableName));
         assertThrows(InvalidDataAccessApiUsageException.class,
-                () -> giftCertificateDao.update(updatableDetails, fields, updatableName));
+                () -> giftCertificateDao.update(updatableCertificate, fields));
     }
 
     @Test
-    public void deleteTest(){
+    public void deleteTest() {
         GiftCertificate testCertificate = new GiftCertificate();
-        testCertificate.setName("first");
+        testCertificate.setId(1);
         giftCertificateDao.delete(testCertificate);
         assertEquals(4, giftCertificateDao.getByTagName("first tag").size());
         assertThrows(IllegalArgumentException.class, () -> giftCertificateDao.delete(null));
