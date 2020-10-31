@@ -22,35 +22,33 @@ import java.util.List;
 @RequestMapping("/")
 public class TagController {
     @Autowired
-    private TagService tagService;
+    private TagService service;
 
     @GetMapping(value = "/tags")
     public List<Tag> getAll() {
-        return tagService.getAll();
+        return service.getAll();
     }
 
-    @GetMapping(value = "/tags/{name}")
+    @GetMapping("/tags/{name}")
     public Tag get(@PathVariable String name) throws LocalizedControllerException {
         try {
-            return tagService.get(name);
+            return service.get(name);
         } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND_EXCEPTION);
         }
     }
 
-    @PostMapping(value = "/tags")
+    @PostMapping("/tags")
     public void save(@RequestBody Tag tag) throws LocalizedControllerException {
         try {
-            tagService.save(tag);
-        } catch (DuplicateKeyException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.DUPLICATE_KEY);
+            service.save(tag);
         } catch (DataIntegrityViolationException ex) {
             throw new LocalizedControllerException(ExceptionDetail.TAG_DOES_NOT_CONTAIN_NAME);
         }
     }
 
-    @DeleteMapping(value = "/tags")
+    @DeleteMapping("/tags")
     public void delete(@RequestBody Tag tag) {
-        tagService.delete(tag);
+        service.delete(tag);
     }
 }

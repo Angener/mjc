@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,8 +60,6 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
 
         assertEquals(tagDao.getAll().size(), 3);
         assertThrows(DataIntegrityViolationException.class, () -> tagDao.save(tagWithNullName));
-        tagWithNullName.setName("third tag");
-        assertThrows(DuplicateKeyException.class, () -> tagDao.save(tagWithNullName));
     }
 
     @Test

@@ -39,7 +39,7 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     public void save(Tag tag) {
-        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name)",
+        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING",
                 new BeanPropertySqlParameterSource(tag));
     }
 
