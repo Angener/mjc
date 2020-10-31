@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,7 +105,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @Transactional
-    public void update(GiftCertificate certificate, String[] fields, List<Tag> tags) {
+    public void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags) {
         updateGiftCertificate(certificate, fields);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
     }
@@ -135,12 +136,12 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(GiftCertificate certificate,
                                                                               List<Tag> tags) {
-        if (tagsPassedForUpdate(tags)) {
+        if (isTagsPassedForUpdate(tags)) {
             updateReferencesBetweenCertificatesAndTags(certificate, tags);
         }
     }
 
-    private boolean tagsPassedForUpdate(List<Tag> tags) {
+    private boolean isTagsPassedForUpdate(List<Tag> tags) {
         return tags.size() > 0;
     }
 
