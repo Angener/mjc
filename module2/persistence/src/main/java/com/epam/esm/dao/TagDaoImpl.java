@@ -1,32 +1,40 @@
 package com.epam.esm.dao;
 
 
+import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.List;
 
-@NoArgsConstructor
 @Repository
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TagDaoImpl implements TagDao {
 
-    @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    @Autowired @Qualifier(value = "tag") private SimpleJdbcInsert simpleJdbcInsert;
+    @Autowired JdbcTemplate jdbcTemplate;
+    @Autowired NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public List<Tag> getAll() {
         return jdbcTemplate.query(
                 "SELECT * FROM tag",
-                (rs, mapRow) -> new Tag(rs.getLong("id"), rs.getString("name")));
+                getTagRowMap());
+    }
+
+    private RowMapper<Tag> getTagRowMap(){
+        return (rs, mapRow) -> new Tag(
+                rs.getLong("id"),
+                rs.getString("name"));
     }
 
     @Override
@@ -34,7 +42,21 @@ public class TagDaoImpl implements TagDao {
         return namedParameterJdbcTemplate.queryForObject(
                 "SELECT * FROM tag WHERE name = :name",
                 Collections.singletonMap("name", name),
-                (rs, mapRow) -> new Tag(rs.getLong("id"), rs.getString("name")));
+                getTagRowMap());
+    }
+
+    @Override
+    public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate){
+        return jdbcTemplate.query(
+                getSqlQueryGettingAllGiftCertificateTags(giftCertificate),
+                getTagRowMap());
+    }
+
+    private String getSqlQueryGettingAllGiftCertificateTags(GiftCertificate certificate) {
+        return "SELECT tag.id, tag.name FROM tag " +
+                "JOIN tag_giftCertificate tgc ON tag.id = tgc.tag_id " +
+                "JOIN giftCertificate ON giftCertificate.id = tgc.giftCertificate_id " +
+                "WHERE giftCertificate.id=" + certificate.getId() + ";";
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.config.DbUnitConfig;
+import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.IDataSet;
@@ -49,6 +50,14 @@ public class TagDaoImpIntegrationTest extends DbUnitConfig {
         Tag tag = tagDao.get("first tag");
         assertEquals("first tag", tag.getName());
         assertThrows(EmptyResultDataAccessException.class, () -> tagDao.get("ninth tag"));
+    }
+
+    @Test
+    public void getAllGiftCertificatesTags(){
+        GiftCertificate certificate = new GiftCertificate();
+        certificate.setId(1);
+
+        assertEquals(2, tagDao.getAllGiftCertificateTags(certificate).size());
     }
 
     @Test
