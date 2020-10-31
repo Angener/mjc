@@ -114,7 +114,7 @@ public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
         updatableCertificate.setDescription("sixth gift card");
         updatableCertificate.setPrice(new BigDecimal("123123123.09"));
         updatableCertificate.setDuration(223);
-        giftCertificateDao.update(updatableCertificate, fields);
+        giftCertificateDao.update(updatableCertificate, fields, tags);
         GiftCertificate testCertificate = giftCertificateDao.get("sixth");
 
         assertEquals(5, giftCertificateDao.getByTagName("first tag").size());
@@ -136,12 +136,12 @@ public class GiftCertificateDaoImplIntegrationTest extends DbUnitConfig {
         updatableCertificate.setName("first");
 
         assertThrows(DuplicateKeyException.class,
-                () -> giftCertificateDao.update(updatableCertificate, fields));
+                () -> giftCertificateDao.update(updatableCertificate, fields, tags));
 
         updatableCertificate.setName("sixth");
         fields[0] = "awd";
         assertThrows(InvalidDataAccessApiUsageException.class,
-                () -> giftCertificateDao.update(updatableCertificate, fields));
+                () -> giftCertificateDao.update(updatableCertificate, fields, tags));
     }
 
     @Test

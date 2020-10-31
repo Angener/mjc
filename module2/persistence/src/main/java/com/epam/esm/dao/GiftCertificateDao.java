@@ -15,7 +15,7 @@ public interface GiftCertificateDao {
 
     List<GiftCertificate> getByPartName(String partName);
 
-    void update(GiftCertificate certificate, String[] fields);
+    void update(GiftCertificate certificate, String[] fields, List<Tag> tags);
 
     void delete(GiftCertificate certificate);
 }

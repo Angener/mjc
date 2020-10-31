@@ -2,7 +2,9 @@ package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,11 +24,12 @@ import java.util.Map;
 
 @NoArgsConstructor
 @Repository
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
-    @Autowired private JdbcTemplate jdbcTemplate;
-    @Autowired private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    @Autowired @Qualifier("tag_giftCertificate") private SimpleJdbcInsert simpleJdbcInsert;
+    @Autowired JdbcTemplate jdbcTemplate;
+    @Autowired NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @Autowired @Qualifier("tag_giftCertificate") SimpleJdbcInsert simpleJdbcInsert;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -96,7 +99,13 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public void update(GiftCertificate certificate, String[] fields) {
+    @Transactional
+    public void update(GiftCertificate certificate, String[] fields, List<Tag> tags) {
+        updateGiftCertificate(certificate, fields);
+        updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
+    }
+
+    private void updateGiftCertificate(GiftCertificate certificate, String[] fields) {
         namedParameterJdbcTemplate.update(
                 getUpdatableSqlQuery(fields, certificate),
                 new BeanPropertySqlParameterSource(certificate));
@@ -118,6 +127,27 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private String formatUpdatableParameters(StringBuilder stringBuilder) {
         return String.join(", ", stringBuilder.toString().split(" "));
+    }
+
+    private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(GiftCertificate certificate,
+                                                                              List<Tag> tags) {
+        if (tagsPassedForUpdate(tags)) {
+            updateReferencesBetweenCertificatesAndTags(certificate, tags);
+        }
+    }
+
+    private boolean tagsPassedForUpdate(List<Tag> tags) {
+        return tags.size() > 0;
+    }
+
+    private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
+        removeExistReferences(certificate);
+        saveReferencesBetweenCertificatesAndTags(certificate, tags);
+    }
+
+    private void removeExistReferences(GiftCertificate certificate) {
+        jdbcTemplate.execute(
+                "DELETE FROM tag_giftCertificate WHERE giftCertificate_id=" + certificate.getId() + ";");
     }
 
     @Override
