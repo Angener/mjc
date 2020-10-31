@@ -31,7 +31,7 @@ public class TagDaoImpl implements TagDao {
                 getTagRowMap());
     }
 
-    private RowMapper<Tag> getTagRowMap(){
+    private RowMapper<Tag> getTagRowMap() {
         return (rs, mapRow) -> new Tag(
                 rs.getLong("id"),
                 rs.getString("name"));
@@ -46,13 +46,13 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate){
+    public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate) {
         return jdbcTemplate.query(
-                getSqlQueryGettingAllGiftCertificateTags(giftCertificate),
+                getSqlScriptGettingAllGiftCertificateTags(giftCertificate),
                 getTagRowMap());
     }
 
-    private String getSqlQueryGettingAllGiftCertificateTags(GiftCertificate certificate) {
+    private String getSqlScriptGettingAllGiftCertificateTags(GiftCertificate certificate) {
         return "SELECT tag.id, tag.name FROM tag " +
                 "JOIN tag_giftCertificate tgc ON tag.id = tgc.tag_id " +
                 "JOIN giftCertificate ON giftCertificate.id = tgc.giftCertificate_id " +

@@ -60,10 +60,10 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
         return namedParameterJdbcTemplate.queryForObject(
                 "SELECT * FROM giftCertificate WHERE name = :name",
                 Collections.singletonMap("name", certificateName),
-                mapGiftCertificate());
+                getGiftCertificateRowMap());
     }
 
-    private RowMapper<GiftCertificate> mapGiftCertificate() {
+    private RowMapper<GiftCertificate> getGiftCertificateRowMap() {
         return (rs, rowNum) -> new GiftCertificate(
                 rs.getLong("id"),
                 rs.getString("name"),
@@ -77,11 +77,11 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public List<GiftCertificate> getByTagName(String tagName) {
         return jdbcTemplate.query(
-                getSqlQueryGettingCertificatesFromDatabase(tagName),
-                mapGiftCertificate());
+                getSqlScriptGettingCertificatesFromDatabase(tagName),
+                getGiftCertificateRowMap());
     }
 
-    private String getSqlQueryGettingCertificatesFromDatabase(String tagName) {
+    private String getSqlScriptGettingCertificatesFromDatabase(String tagName) {
         return "SELECT gc.id, gc.name, gc.description, gc.price, " +
                 "gc.createDate, gc.lastUpdateDate, gc.duration " +
                 "FROM giftCertificate gc " +
@@ -91,11 +91,15 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> getByPartName(String partName) {
+    public List<GiftCertificate> getByPartName(String partNameOrDescription) {
         return jdbcTemplate.query(
-                "SELECT * FROM giftCertificate WHERE name LIKE '%" + partName + "%' " +
-                        "OR description LIKE '%" + partName + "%'",
-                mapGiftCertificate());
+                getSqlScriptGettingTagsByPartNameOrDescription(partNameOrDescription),
+                getGiftCertificateRowMap());
+    }
+
+    private String getSqlScriptGettingTagsByPartNameOrDescription(String partNameOrDescription) {
+        return "SELECT * FROM giftCertificate WHERE name LIKE '%" + partNameOrDescription + "%' " +
+                "OR description LIKE '%" + partNameOrDescription + "%'";
     }
 
     @Override
@@ -107,11 +111,11 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private void updateGiftCertificate(GiftCertificate certificate, String[] fields) {
         namedParameterJdbcTemplate.update(
-                getUpdatableSqlQuery(fields, certificate),
+                getUpdatingSqlScript(fields, certificate),
                 new BeanPropertySqlParameterSource(certificate));
     }
 
-    private String getUpdatableSqlQuery(String[] fields, GiftCertificate certificate) {
+    private String getUpdatingSqlScript(String[] fields, GiftCertificate certificate) {
         return "UPDATE giftCertificate " +
                 "SET " + getUpdatableParameters(fields) +
                 ", lastUpdateDate = CURRENT_TIMESTAMP " +
@@ -146,8 +150,11 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private void removeExistReferences(GiftCertificate certificate) {
-        jdbcTemplate.execute(
-                "DELETE FROM tag_giftCertificate WHERE giftCertificate_id=" + certificate.getId() + ";");
+        jdbcTemplate.execute(getSqlScriptRemovingExistReferencesBetweenCertificatesAndTags(certificate));
+    }
+
+    private String getSqlScriptRemovingExistReferencesBetweenCertificatesAndTags(GiftCertificate certificate) {
+        return "DELETE FROM tag_giftCertificate WHERE giftCertificate_id=" + certificate.getId() + ";";
     }
 
     @Override

@@ -29,7 +29,6 @@ public class DbUnitConfig extends DBTestCase {
     public DbUnitConfig() {
         properties = new Properties();
         loadProperties(properties);
-        setSystemProperties(properties);
     }
 
     private void loadProperties(Properties properties) {
