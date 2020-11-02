@@ -22,9 +22,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testImplementation group: 'com.h2database', name: 'h2', version: '1.4.200'
+    compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
 }
 
 test {
     useJUnitPlatform()
-    exclude '**/*IntegrationTest.*'
 }

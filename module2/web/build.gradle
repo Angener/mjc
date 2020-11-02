@@ -1,9 +1,5 @@
-//import com.bmuschko.gradle.tomcat.tasks.TomcatRun
-//import com.bmuschko.gradle.tomcat.tasks.TomcatStop
-
 apply plugin: 'java'
 apply plugin: 'com.bmuschko.tomcat'
-//apply plugin: 'com.bmuschko.tomcat-base'
 
 group 'com.epam'
 version '1.0'
@@ -39,41 +35,11 @@ dependencies {
     compile group: 'org.springframework', name: 'spring-context-support', version: '5.2.9.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.3'
     compile group: 'com.google.guava', name: 'guava', version: '30.0-jre'
-
-
-
     implementation project (':persistence')
     implementation project (':service')
-
 }
 
 tomcat {
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
     ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
 }
-
-//ext {
-//    tomcatStopPort = 8081
-//    tomcatStopKey = 'stopKey'
-//}
-//
-//task integrationTomcatRun(type: TomcatRun) {
-//    stopPort = tomcatStopPort
-//    stopKey = tomcatStopKey
-//    daemon = true
-//}
-//
-//task integrationTomcatStop(type: TomcatStop) {
-//    stopPort = tomcatStopPort
-//    stopKey = tomcatStopKey
-//}
-//
-//task integrationTest(type: Test) {
-//    include '**/*IntegrationTest.*'
-//    dependsOn integrationTomcatRun
-//    finalizedBy integrationTomcatStop
-//}
-//
-//test {
-//    exclude '**/*IntegrationTest.*'
-//}
