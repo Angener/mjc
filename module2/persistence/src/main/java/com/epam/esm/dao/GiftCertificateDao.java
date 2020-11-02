@@ -2,7 +2,7 @@ package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface GiftCertificateDao {
 
     List<GiftCertificate> getByPartName(String partName);
 
-    void update(GiftCertificate certificate, String[] fields, List<Tag> tags);
+    void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags);
 
     void delete(GiftCertificate certificate);
 }
