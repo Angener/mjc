@@ -2,12 +2,13 @@ package com.epam.esm.service;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.epam.esm.exception.UpdatingForbiddenFieldsException;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
 public interface GiftCertificateService {
-    void save(GiftCertificate certificate, List<Tag> tags) throws DataIntegrityViolationException;
+    void save(GiftCertificate certificate, List<Tag> tags);
 
     GiftCertificate get(String certificateName);
 
@@ -15,7 +16,8 @@ public interface GiftCertificateService {
 
     List<GiftCertificate> getByPartName(String partName);
 
-    void update(GiftCertificate certificate, String[] fields);
+    void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags)
+            throws UpdatingForbiddenFieldsException;
 
     void delete(GiftCertificate certificate);
 }
