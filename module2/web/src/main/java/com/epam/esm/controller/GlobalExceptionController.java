@@ -3,7 +3,6 @@ package com.epam.esm.controller;
 import com.epam.esm.exception.LocalizedControllerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +21,7 @@ public class GlobalExceptionController {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("errorMessage", resolveResourceBundle(ex, locale));
         parameters.put("errorCode", ex.getExceptionDetail().getErrorCode());
-        return new ResponseEntity<>(parameters, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(parameters, ex.getExceptionDetail().getHttpStatus());
     }
 
     private String resolveResourceBundle(Exception ex, Locale locale) {
