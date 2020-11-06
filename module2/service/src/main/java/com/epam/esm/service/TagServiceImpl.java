@@ -28,7 +28,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Tag get(String name) {
-        return tagDao.get(name);
+        return tagDao.getByName(name);
     }
 
     @Override

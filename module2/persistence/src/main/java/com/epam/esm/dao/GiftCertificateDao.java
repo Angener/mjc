@@ -13,7 +13,7 @@ public interface GiftCertificateDao {
 
     GiftCertificate getById(long id);
 
-    GiftCertificate get(String certificateName);
+    GiftCertificate getByName(String certificateName);
 
     List<GiftCertificate> getByTagName(String tagName);
 

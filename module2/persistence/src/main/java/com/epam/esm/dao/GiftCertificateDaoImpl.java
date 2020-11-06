@@ -3,12 +3,10 @@ package com.epam.esm.dao;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.lang.Nullable;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,31 +23,29 @@ import java.util.stream.Collectors;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
-public class GiftCertificateDaoImpl implements GiftCertificateDao {
+public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements GiftCertificateDao {
 
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    SimpleJdbcInsert simpleJdbcInsert;
-    JdbcTemplate jdbcTemplate;
     TagDao tagDao;
+
+    @Autowired
+    public GiftCertificateDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                                  SimpleJdbcInsert simpleJdbcInsert,
+                                  JdbcTemplate jdbcTemplate,
+                                  TagDao tagDao) {
+        super(jdbcTemplate, namedParameterJdbcTemplate, simpleJdbcInsert);
+        this.tagDao = tagDao;
+    }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public void save(GiftCertificate certificate, List<Tag> tags) {
         saveTags(tags);
-        saveGiftCertificate(certificate);
-        saveReferencesBetweenCertificatesAndTags(get(certificate.getName()), updateTagsId(tags));
+        updateTable(SqlScript.SAVE_CERTIFICATE.getScript(), certificate);
+        saveReferencesBetweenCertificatesAndTags(getByName(certificate.getName()), updateTagsId(tags));
     }
 
     private void saveTags(List<Tag> tags) {
         tags.forEach(tagDao::save);
-    }
-
-    private void saveGiftCertificate(GiftCertificate certificate) {
-        namedParameterJdbcTemplate.update(
-                "INSERT INTO gift_certificate (name, description, price, duration) " +
-                        "VALUES (:name, :description, :price, :duration);",
-                new BeanPropertySqlParameterSource(certificate));
     }
 
     private void saveReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
@@ -65,33 +60,23 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private List<Tag> updateTagsId(List<Tag> tags) {
         return tags.stream()
-                .map(tag -> tagDao.get(tag.getName()))
+                .map(tag -> tagDao.getByName(tag.getName()))
                 .collect(Collectors.toList());
     }
 
-    //TODO cover with test <==================================================================
     @Override
     public List<GiftCertificate> getAll() {
-        return jdbcTemplate.query(
-                "SELECT * FROM gift_certificate;",
-                getGiftCertificateRowMap());
-    }
-
-    //TODO cover with test <==================================================================
-    @Override
-    public GiftCertificate getById(long id){
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM gift_certificate WHERE id = :id;",
-                Collections.singletonMap("id", id),
-                getGiftCertificateRowMap());
+        return getAllEntityFromTable(SqlScript.GET_ALL_CERTIFICATES.getScript(), getGiftCertificateRowMap());
     }
 
     @Override
-    public GiftCertificate get(String certificateName) {
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM gift_certificate WHERE name = :name;",
-                Collections.singletonMap("name", certificateName),
-                getGiftCertificateRowMap());
+    public GiftCertificate getById(long id) {
+        return getEntityFromTable(SqlScript.GET_CERTIFICATE_BY_ID.getScript(), id, getGiftCertificateRowMap());
+    }
+
+    @Override
+    public GiftCertificate getByName(String name) {
+        return getEntityFromTable(SqlScript.GET_CERTIFICATE_BY_NAME.getScript(), name, getGiftCertificateRowMap());
     }
 
     private RowMapper<GiftCertificate> getGiftCertificateRowMap() {
@@ -106,53 +91,32 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> getByTagName(String tagName) {
-        return namedParameterJdbcTemplate.query(
-                getSqlScriptGettingCertificatesFromDatabase(),
-                Collections.singletonMap("tagName", tagName),
-                getGiftCertificateRowMap());
-    }
-
-    private String getSqlScriptGettingCertificatesFromDatabase() {
-        return "SELECT gc.id, gc.name, gc.description, gc.price, " +
-                "gc.create_date, gc.last_update_date, gc.duration " +
-                "FROM gift_certificate gc " +
-                "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
-                "JOIN tag ON tag.id = tgc.tag_id " +
-                "WHERE tag.name= :tagName;";
+    public List<GiftCertificate> getByTagName(String name) {
+        return getEntityListFromTable(SqlScript.GET_CERTIFICATES_BY_TAG_NAME.getScript(), name, getGiftCertificateRowMap());
     }
 
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(String partNameOrDescription) {
-        return namedParameterJdbcTemplate.query(
-                getSqlScriptGettingTagsByPartNameOrDescription(),
-                Collections.singletonMap("partNameOrDescription", "%" + partNameOrDescription + "%"),
+        return getEntityListFromTable(
+                SqlScript.GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION.getScript(),
+                prepareParameterForInsertingToSqlScript(partNameOrDescription),
                 getGiftCertificateRowMap());
     }
 
-    private String getSqlScriptGettingTagsByPartNameOrDescription() {
-        return "SELECT * FROM gift_certificate WHERE name LIKE :partNameOrDescription " +
-                "OR description LIKE :partNameOrDescription;";
+    private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
+        return "%" + partNameOrDescription + "%";
     }
 
     @Override
     @Transactional
     public void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags) {
-        updateGiftCertificate(certificate, fields);
+        updateTable(getUpdatingSqlScript(fields), certificate);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
     }
 
-    private void updateGiftCertificate(GiftCertificate certificate, String[] fields) {
-        namedParameterJdbcTemplate.update(
-                getUpdatingSqlScript(fields),
-                new BeanPropertySqlParameterSource(certificate));
-    }
-
     private String getUpdatingSqlScript(String[] fields) {
-        return "UPDATE gift_certificate " +
-                "SET " + getUpdatableParameters(fields) +
-                ", last_update_date = CURRENT_TIMESTAMP " +
-                "WHERE id = :id;";
+        return SqlScript.UPDATE_CERTIFICATE.getScript()
+                .replace("?INSERT FIELDS?", getUpdatableParameters(fields));
     }
 
     private String getUpdatableParameters(String[] fields) {
@@ -179,24 +143,12 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
         saveTags(tags);
-        removeExistReferences(certificate);
+        updateTable(SqlScript.DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS.getScript(), certificate);
         saveReferencesBetweenCertificatesAndTags(certificate, updateTagsId(tags));
-    }
-
-    private void removeExistReferences(GiftCertificate certificate) {
-        namedParameterJdbcTemplate.update(
-                getSqlScriptRemovingExistReferencesBetweenCertificatesAndTags(),
-                new BeanPropertySqlParameterSource(certificate));
-    }
-
-    private String getSqlScriptRemovingExistReferencesBetweenCertificatesAndTags() {
-        return "DELETE FROM tag_gift_certificate WHERE gift_certificate_id= :id;";
     }
 
     @Override
     public void delete(GiftCertificate certificate) {
-        namedParameterJdbcTemplate.update(
-                "DELETE FROM gift_certificate WHERE id = :id;",
-                new BeanPropertySqlParameterSource(certificate));
+        updateTable(SqlScript.DELETE_CERTIFICATE.getScript(), certificate);
     }
 }

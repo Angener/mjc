@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TagDao {
      List<Tag> getAll ();
-     Tag get(String name);
+     Tag getByName(String name);
      Tag getById(long id);
      List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
      void save(Tag tag);

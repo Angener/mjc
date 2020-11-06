@@ -4,31 +4,27 @@ package com.epam.esm.dao;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.List;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
-public class TagDaoImpl implements TagDao {
+public class TagDaoImpl extends Dao<Tag> implements TagDao {
 
-    JdbcTemplate jdbcTemplate;
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @Autowired
+    public TagDaoImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate){
+        super(jdbcTemplate, namedParameterJdbcTemplate);
+    }
 
     @Override
     public List<Tag> getAll() {
-        return jdbcTemplate.query(
-                "SELECT * FROM tag;",
-                getTagRowMap());
+        return getAllEntityFromTable(SqlScript.GET_ALL_TAGS.getScript(), getTagRowMap());
     }
 
     private RowMapper<Tag> getTagRowMap() {
@@ -36,49 +32,32 @@ public class TagDaoImpl implements TagDao {
                 rs.getLong("id"),
                 rs.getString("name"));
     }
-    //TODO cover with test <==================================================================
+
     @Override
-    public Tag getById(long id){
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM tag WHERE id = :id;",
-                Collections.singletonMap("id", id),
+    public Tag getById(long id) {
+        return getEntityFromTable(SqlScript.GET_TAG_BY_ID.getScript(), id, getTagRowMap());
+    }
+
+    @Override
+    public Tag getByName(String name) {
+        return getEntityFromTable(SqlScript.GET_TAG_BY_NAME.getScript(), name, getTagRowMap());
+    }
+
+    @Override
+    public List<Tag> getAllGiftCertificateTags(GiftCertificate certificate) {
+        return getAllEntitiesFromTableReferencedEntity(
+                SqlScript.GET_ALL_CERTIFICATE_TAGS.getScript(),
+                certificate,
                 getTagRowMap());
-    }
-
-    @Override
-    public Tag get(String name) {
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM tag WHERE name = :name;",
-                Collections.singletonMap("name", name),
-                getTagRowMap());
-    }
-
-    @Override
-    public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate) {
-        return namedParameterJdbcTemplate.query(
-                getSqlScriptGettingAllGiftCertificateTags(),
-                new BeanPropertySqlParameterSource(giftCertificate),
-                getTagRowMap()
-        );
-    }
-
-    private String getSqlScriptGettingAllGiftCertificateTags() {
-        return "SELECT tag.id, tag.name FROM tag " +
-                "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
-                "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
-                "WHERE gift_certificate.id = :id;";
     }
 
     @Override
     public void save(Tag tag) {
-        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING;",
-                new BeanPropertySqlParameterSource(tag));
+        updateTable(SqlScript.SAVE_TAG.getScript(), tag);
     }
 
     @Override
     public void delete(Tag tag) {
-        namedParameterJdbcTemplate.update(
-                "DELETE FROM tag WHERE id = :id;",
-                new BeanPropertySqlParameterSource(tag));
+        updateTable(SqlScript.DELETE_TAG.getScript(), tag);
     }
 }
