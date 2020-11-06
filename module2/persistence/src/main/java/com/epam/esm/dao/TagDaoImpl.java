@@ -64,9 +64,9 @@ public class TagDaoImpl implements TagDao {
 
     private String getSqlScriptGettingAllGiftCertificateTags() {
         return "SELECT tag.id, tag.name FROM tag " +
-                "JOIN tag_giftCertificate tgc ON tag.id = tgc.tag_id " +
-                "JOIN giftCertificate ON giftCertificate.id = tgc.giftCertificate_id " +
-                "WHERE giftCertificate.id = :id;";
+                "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
+                "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
+                "WHERE gift_certificate.id = :id;";
     }
 
     @Override

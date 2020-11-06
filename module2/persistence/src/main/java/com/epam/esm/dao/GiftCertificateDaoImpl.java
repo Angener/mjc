@@ -48,7 +48,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private void saveGiftCertificate(GiftCertificate certificate) {
         namedParameterJdbcTemplate.update(
-                "INSERT INTO giftCertificate (name, description, price, duration) " +
+                "INSERT INTO gift_certificate (name, description, price, duration) " +
                         "VALUES (:name, :description, :price, :duration);",
                 new BeanPropertySqlParameterSource(certificate));
     }
@@ -58,7 +58,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
                 tag -> {
                     Map<String, Object> parameter = new HashMap<>();
                     parameter.put("tag_id", tag.getId());
-                    parameter.put("giftCertificate_id", certificate.getId());
+                    parameter.put("gift_certificate_id", certificate.getId());
                     simpleJdbcInsert.execute(parameter);
                 });
     }
@@ -73,7 +73,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public List<GiftCertificate> getAll() {
         return jdbcTemplate.query(
-                "SELECT * FROM giftCertificate;",
+                "SELECT * FROM gift_certificate;",
                 getGiftCertificateRowMap());
     }
 
@@ -81,7 +81,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public GiftCertificate getById(long id){
         return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM giftCertificate WHERE id = :id;",
+                "SELECT * FROM gift_certificate WHERE id = :id;",
                 Collections.singletonMap("id", id),
                 getGiftCertificateRowMap());
     }
@@ -89,7 +89,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public GiftCertificate get(String certificateName) {
         return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM giftCertificate WHERE name = :name;",
+                "SELECT * FROM gift_certificate WHERE name = :name;",
                 Collections.singletonMap("name", certificateName),
                 getGiftCertificateRowMap());
     }
@@ -100,8 +100,8 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getBigDecimal("price"),
-                rs.getTimestamp("createDate").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
-                rs.getTimestamp("lastUpdateDate").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
+                rs.getTimestamp("create_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
+                rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
                 rs.getInt("duration"));
     }
 
@@ -115,9 +115,9 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private String getSqlScriptGettingCertificatesFromDatabase() {
         return "SELECT gc.id, gc.name, gc.description, gc.price, " +
-                "gc.createDate, gc.lastUpdateDate, gc.duration " +
-                "FROM giftCertificate gc " +
-                "JOIN tag_giftCertificate tgc ON gc.id = tgc.giftCertificate_id " +
+                "gc.create_date, gc.last_update_date, gc.duration " +
+                "FROM gift_certificate gc " +
+                "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
                 "JOIN tag ON tag.id = tgc.tag_id " +
                 "WHERE tag.name= :tagName;";
     }
@@ -131,7 +131,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String getSqlScriptGettingTagsByPartNameOrDescription() {
-        return "SELECT * FROM giftCertificate WHERE name LIKE :partNameOrDescription " +
+        return "SELECT * FROM gift_certificate WHERE name LIKE :partNameOrDescription " +
                 "OR description LIKE :partNameOrDescription;";
     }
 
@@ -149,9 +149,9 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String getUpdatingSqlScript(String[] fields) {
-        return "UPDATE giftCertificate " +
+        return "UPDATE gift_certificate " +
                 "SET " + getUpdatableParameters(fields) +
-                ", lastUpdateDate = CURRENT_TIMESTAMP " +
+                ", last_update_date = CURRENT_TIMESTAMP " +
                 "WHERE id = :id;";
     }
 
@@ -190,13 +190,13 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String getSqlScriptRemovingExistReferencesBetweenCertificatesAndTags() {
-        return "DELETE FROM tag_giftCertificate WHERE giftCertificate_id= :id;";
+        return "DELETE FROM tag_gift_certificate WHERE gift_certificate_id= :id;";
     }
 
     @Override
     public void delete(GiftCertificate certificate) {
         namedParameterJdbcTemplate.update(
-                "DELETE FROM giftCertificate WHERE id = :id;",
+                "DELETE FROM gift_certificate WHERE id = :id;",
                 new BeanPropertySqlParameterSource(certificate));
     }
 }

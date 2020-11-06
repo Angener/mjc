@@ -42,7 +42,7 @@ public class JdbcConfig {
 
     @Bean
     public SimpleJdbcInsert getTag_GiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_giftCertificate");
+        return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_gift_certificate");
     }
 
     @Bean
