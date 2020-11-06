@@ -14,6 +14,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) {
         WebApplicationContext context = getContext();
+        servletContext.setInitParameter("spring.profiles.active", "default");
         servletContext.addListener(new ContextLoaderListener(context));
         ServletRegistration.Dynamic dispatcher =
                 servletContext.addServlet("dispatcher", new DispatcherServlet(context));
@@ -23,7 +24,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
 
     private AnnotationConfigWebApplicationContext getContext() {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(SpringConfig.class, WebConfig.class);
+        context.register(SpringConfig.class);
         return context;
     }
 }
