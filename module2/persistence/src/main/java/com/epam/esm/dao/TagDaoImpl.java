@@ -4,7 +4,7 @@ package com.epam.esm.dao;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,17 +17,17 @@ import java.util.Collections;
 import java.util.List;
 
 @Repository
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class TagDaoImpl implements TagDao {
 
-    @Autowired JdbcTemplate jdbcTemplate;
-    @Autowired NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    JdbcTemplate jdbcTemplate;
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public List<Tag> getAll() {
         return jdbcTemplate.query(
-                "SELECT * FROM tag",
+                "SELECT * FROM tag;",
                 getTagRowMap());
     }
 
@@ -40,35 +40,37 @@ public class TagDaoImpl implements TagDao {
     @Override
     public Tag get(String name) {
         return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM tag WHERE name = :name",
+                "SELECT * FROM tag WHERE name = :name;",
                 Collections.singletonMap("name", name),
                 getTagRowMap());
     }
 
     @Override
     public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate) {
-        return jdbcTemplate.query(
-                getSqlScriptGettingAllGiftCertificateTags(giftCertificate),
-                getTagRowMap());
+        return namedParameterJdbcTemplate.query(
+                getSqlScriptGettingAllGiftCertificateTags(),
+                new BeanPropertySqlParameterSource(giftCertificate),
+                getTagRowMap()
+        );
     }
 
-    private String getSqlScriptGettingAllGiftCertificateTags(GiftCertificate certificate) {
+    private String getSqlScriptGettingAllGiftCertificateTags() {
         return "SELECT tag.id, tag.name FROM tag " +
                 "JOIN tag_giftCertificate tgc ON tag.id = tgc.tag_id " +
                 "JOIN giftCertificate ON giftCertificate.id = tgc.giftCertificate_id " +
-                "WHERE giftCertificate.id=" + certificate.getId() + ";";
+                "WHERE giftCertificate.id = :id;";
     }
 
     @Override
     public void save(Tag tag) {
-        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING",
+        namedParameterJdbcTemplate.update("INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING;",
                 new BeanPropertySqlParameterSource(tag));
     }
 
     @Override
     public void delete(Tag tag) {
         namedParameterJdbcTemplate.update(
-                "DELETE FROM tag WHERE id = :id",
+                "DELETE FROM tag WHERE id = :id;",
                 new BeanPropertySqlParameterSource(tag));
     }
 }
