@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 
 @Configuration
-@PropertySource("classpath:postgres.properties")
+@PropertySource("classpath:${spring.profiles.active}.properties")
 @ComponentScan(basePackageClasses = {JdbcConfig.class, TagDaoImpl.class, GiftCertificateDaoImpl.class})
 @EnableTransactionManagement
 public class JdbcConfig {
@@ -40,12 +40,7 @@ public class JdbcConfig {
         return new NamedParameterJdbcTemplate((jdbcTemplate));
     }
 
-    @Bean("tag")
-    public SimpleJdbcInsert getTagTableSimpleJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag");
-    }
-
-    @Bean("tag_giftCertificate")
+    @Bean
     public SimpleJdbcInsert getTag_GiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_giftCertificate");
     }
