@@ -9,11 +9,13 @@ import java.util.List;
 public interface GiftCertificateDao {
     void save(GiftCertificate certificate, List<Tag> tags);
 
+    List<GiftCertificate> getAll();
+
     GiftCertificate get(String certificateName);
 
     List<GiftCertificate> getByTagName(String tagName);
 
-    List<GiftCertificate> getByPartName(String partName);
+    List<GiftCertificate> searchByPartNameOrDescription(String partName);
 
     void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags);
 
