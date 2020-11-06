@@ -2,16 +2,18 @@ package com.epam.esm.service;
 
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.entity.Tag;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Data
-public class TagServiceImpl implements TagService{
-    @Autowired
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor(onConstructor = @__(@Autowired))
+public class TagServiceImpl implements TagService {
     TagDao tagDao;
 
     @Override
