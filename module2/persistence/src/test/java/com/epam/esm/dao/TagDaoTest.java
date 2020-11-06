@@ -57,9 +57,11 @@ public class TagDaoTest extends InMemoryDbConfig {
 
     @Test
     public void save() {
-        dao.save(new Tag("third tag"));
+        long id;
+        id = dao.save(new Tag("third tag"));
 
         assertEquals(3, dao.getAll().size());
+        assertEquals(3, id);
         assertThrows(DataIntegrityViolationException.class, () -> dao.save(new Tag()));
     }
 

@@ -51,7 +51,8 @@ public class GiftCertificateTest extends InMemoryDbConfig {
 
     @Test
     public void save() {
-        dao.save(certificate, tags);
+        long id = dao.save(certificate, tags);
+        assertEquals(6, id);
         assertEquals(certificate.getName(), dao.getByName("sixth").getName());
         when(certificate.getName()).thenReturn(null);
         assertThrows(DataIntegrityViolationException.class, () -> dao.save(certificate, tags));
