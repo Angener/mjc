@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,7 +33,7 @@ public class GIftCertificateController {
     ObjectMapper mapper;
 
     @PostMapping("/giftCertificates")
-    public void save(@RequestBody GiftCertificateDto dto) throws LocalizedControllerException {
+    public void save(@RequestBody GiftCertificateDto dto) {
         try {
             service.save(dto);
         } catch (DuplicateKeyException ex) {
@@ -43,7 +44,7 @@ public class GIftCertificateController {
     }
 
     @PatchMapping("/giftCertificates")
-    public void update(@RequestBody GiftCertificateDto dto) throws LocalizedControllerException {
+    public void update(@RequestBody GiftCertificateDto dto) {
         try {
             service.update(dto);
         } catch (UpdatingForbiddenFieldsException ex) {
@@ -54,25 +55,28 @@ public class GIftCertificateController {
     }
 
     @GetMapping("/giftCertificates")
-    public String getAll() {
+    public String getAll() throws IOException {
         try {
             return mapper.writeValueAsString(service.getAll());
-        } catch (IOException ex) {
-            //TODO use unregister exception instead
-            throw new LocalizedControllerException(ExceptionDetail.INTERNAL_SERVER_ERROR);
+        } catch (EmptyResultDataAccessException ex){
+            throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
         }
+    }
 
-        //emptyresultsetexception
+    @GetMapping("/giftCertificates/{id}")
+    public String get(@PathVariable long id) throws IOException {
+        try {
+            return mapper.writeValueAsString(service.getById(id));
+        } catch (EmptyResultDataAccessException ex){
+            throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
+        }
     }
 
 
     //TODO this method is refactoring now.
     // It will be able returns certificates by tag, part name or description and sort them.
-    @GetMapping("/giftCertificates/{name}")
-    public String get(@PathVariable String name) throws IOException {
-        return mapper.writeValueAsString(service.get(name));
-        //emptyresultsetexception
-    }
+
+
 
     @DeleteMapping("/giftCertificates")
     public void delete(@RequestBody GiftCertificate certificate) {

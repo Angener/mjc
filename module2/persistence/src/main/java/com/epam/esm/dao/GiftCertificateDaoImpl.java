@@ -69,19 +69,28 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public GiftCertificate get(String certificateName) {
-        return namedParameterJdbcTemplate.queryForObject(
-                "SELECT * FROM giftCertificate WHERE name = :name;",
-                Collections.singletonMap("name", certificateName),
-                getGiftCertificateRowMap());
-    }
-
     //TODO cover with test <==================================================================
     @Override
     public List<GiftCertificate> getAll() {
         return jdbcTemplate.query(
                 "SELECT * FROM giftCertificate;",
+                getGiftCertificateRowMap());
+    }
+
+    //TODO cover with test <==================================================================
+    @Override
+    public GiftCertificate getById(long id){
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT * FROM giftCertificate WHERE id = :id;",
+                Collections.singletonMap("id", id),
+                getGiftCertificateRowMap());
+    }
+
+    @Override
+    public GiftCertificate get(String certificateName) {
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT * FROM giftCertificate WHERE name = :name;",
+                Collections.singletonMap("name", certificateName),
                 getGiftCertificateRowMap());
     }
 

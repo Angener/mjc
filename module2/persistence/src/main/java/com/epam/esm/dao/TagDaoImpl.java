@@ -36,6 +36,14 @@ public class TagDaoImpl implements TagDao {
                 rs.getLong("id"),
                 rs.getString("name"));
     }
+    //TODO cover with test <==================================================================
+    @Override
+    public Tag getById(long id){
+        return namedParameterJdbcTemplate.queryForObject(
+                "SELECT * FROM tag WHERE id = :id;",
+                Collections.singletonMap("id", id),
+                getTagRowMap());
+    }
 
     @Override
     public Tag get(String name) {

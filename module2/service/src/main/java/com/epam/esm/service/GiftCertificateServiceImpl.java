@@ -59,6 +59,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
+    public GiftCertificate getById(long id){
+        return giftCertificateDao.getById(id);
+    }
+
+    @Override
     public GiftCertificate get(String certificateName) {
         return giftCertificateDao.get(certificateName);
     }

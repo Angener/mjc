@@ -27,20 +27,24 @@ public class TagController {
 
     @GetMapping(value = "/tags")
     public List<Tag> getAll() {
-        return service.getAll();
+        try {
+            return service.getAll();
+        } catch (EmptyResultDataAccessException ex) {
+            throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND);
+        }
     }
 
-    @GetMapping("/tags/{name}")
-    public Tag get(@PathVariable String name) throws LocalizedControllerException {
+    @GetMapping("/tags/{id}")
+    public Tag get(@PathVariable long id) {
         try {
-            return service.get(name);
+            return service.getById(id);
         } catch (EmptyResultDataAccessException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND_EXCEPTION);
+            throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND);
         }
     }
 
     @PostMapping("/tags")
-    public void save(@RequestBody Tag tag) throws LocalizedControllerException {
+    public void save(@RequestBody Tag tag) {
         try {
             service.save(tag);
         } catch (DataIntegrityViolationException ex) {

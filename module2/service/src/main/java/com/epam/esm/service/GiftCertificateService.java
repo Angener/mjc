@@ -11,6 +11,8 @@ public interface GiftCertificateService {
 
     List<GiftCertificate> getAll();
 
+    GiftCertificate getById(long id);
+
     GiftCertificate get(String certificateName);
 
     List<GiftCertificate> getByTagName(String tagName);

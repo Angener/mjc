@@ -22,6 +22,11 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    public Tag getById(long id) {
+        return tagDao.getById(id);
+    }
+
+    @Override
     public Tag get(String name) {
         return tagDao.get(name);
     }
