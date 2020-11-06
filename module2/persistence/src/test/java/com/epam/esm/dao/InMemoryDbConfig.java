@@ -1,36 +1,20 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.config.JdbcConfig;
-import com.epam.esm.entity.Tag;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-
-import javax.sql.DataSource;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @SpringJUnitWebConfig(JdbcConfig.class)
 @ContextConfiguration(
-        classes = { JdbcConfig.class },
+        classes = {JdbcConfig.class},
         loader = AnnotationConfigContextLoader.class)
-public class Teeest {
+public class InMemoryDbConfig {
     private static final String CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS tag (" +
             "id BIGSERIAL PRIMARY KEY NOT NULL, " +
             "name CHARACTER VARYING(255) UNIQUE NOT NULL);";
@@ -61,42 +45,35 @@ public class Teeest {
             "('fifth', 'fifth gift card', 3.2, 22);";
     private static final String FILL_TAG_GIFT_CERTIFICATE_TABLE = "INSERT INTO tag_giftCertificate " +
             "(tag_id, giftCertificate_id) VALUES (1, 1), (2, 1), (1, 2), (1, 3), (1, 4), (1, 5);";
+    private static final String DROP_TAG_TABLE = "DROP TABLE tag;";
+    private static final String DROP_GIFT_CERTIFICATE_TABLE = "DROP TABLE giftCertificate;";
+    private static final String DROP_TAG_GIFT_CERTIFICATE_TABLE = "DROP TABLE tag_giftCertificate;";
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-    DataSource dataSource;
 
-    @BeforeEach
-    public void init() throws SQLException {
+    void setUp() throws SQLException {
+        jdbcTemplate.execute(getInitSqlScript());
+    }
 
-        System.out.println("before test");
-        String sqlScript = String.join(" ",
+    private String getInitSqlScript() {
+        return String.join(" ",
                 CREATE_TAG_TABLE,
                 CREATE_GIFT_CERTIFICATE_TABLE,
                 CREATE_TAG_GIFT_CERTIFICATE_TABLE,
                 FILL_TAG_TABLE,
                 FILL_GIFT_CERTIFICATE_TABLE,
                 FILL_TAG_GIFT_CERTIFICATE_TABLE);
-        jdbcTemplate.execute(sqlScript);
-
-        System.out.println("End befoore test");
     }
 
-    @Test
-    public void tre(){
-        System.out.println("in test");
-//        String sqlScript = String.join(" ", CREATE_DATABASE_SCRIPT, USE_DATABASE_SCRIPT,
-//                CREATE_TAG_TABLE);
-//        jdbcTemplate.execute(sqlScript);
-        System.out.println(jdbcTemplate.query("SELECT * FROM tag", (rs, mapRow) -> new Tag(
-                rs.getLong("id"),
-                rs.getString("name"))
-        ));
+    void destroy() {
+        jdbcTemplate.execute(getDestroySqlScript());
+    }
 
-        }
-
-//        System.out.println(jdbcTemplate.query("SELECT * FROM tag", (rs, mapRow) -> new Tag(
-//                rs.getLong("id"),
-//                rs.getString("name"))));
-
+    private String getDestroySqlScript() {
+        return String.join(" ",
+                DROP_TAG_GIFT_CERTIFICATE_TABLE,
+                DROP_TAG_TABLE,
+                DROP_GIFT_CERTIFICATE_TABLE);
+    }
 }
