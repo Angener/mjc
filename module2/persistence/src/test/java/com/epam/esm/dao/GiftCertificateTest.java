@@ -52,7 +52,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     @Test
     public void save() {
         dao.save(certificate, tags);
-        assertEquals(certificate.getName(), dao.get("sixth").getName());
+        assertEquals(certificate.getName(), dao.getByName("sixth").getName());
         when(certificate.getName()).thenReturn(null);
         assertThrows(DataIntegrityViolationException.class, () -> dao.save(certificate, tags));
         when(certificate.getName()).thenReturn("first");
@@ -60,8 +60,8 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     }
 
     @Test
-    public void get() {
-        GiftCertificate testableCertificate = dao.get("first");
+    public void getByName() {
+        GiftCertificate testableCertificate = dao.getByName("first");
 
         assertEquals("first", testableCertificate.getName());
         assertEquals("first gift card", testableCertificate.getDescription());
@@ -71,6 +71,18 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),
                 testableCertificate.getLastUpdateDate().format(DateTimeFormatter.ISO_DATE));
         assertEquals(12, testableCertificate.getDuration());
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("no name"));
+    }
+
+    @Test
+    public void getAll(){
+        assertEquals(5, dao.getAll().size());
+    }
+
+    @Test
+    public void getById(){
+        assertEquals(5, dao.getAll().size());
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getById(0));
     }
 
     @Test
@@ -91,7 +103,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
                 new Tag("third tag"), new Tag("fourth tag"));
         when(certificate.getId()).thenReturn(1L);
         dao.update(certificate, fields, updatableTag);
-        GiftCertificate testableCertificate = dao.get("sixth");
+        GiftCertificate testableCertificate = dao.getByName("sixth");
 
         assertEquals(4, dao.getByTagName("first tag").size());
         assertEquals(1, dao.getByTagName("third tag").size());
@@ -101,7 +113,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         assertEquals("sixth gift card", testableCertificate.getDescription());
         assertEquals(new BigDecimal("23.30"), testableCertificate.getPrice());
         assertEquals(3, testableCertificate.getDuration());
-        assertThrows(EmptyResultDataAccessException.class, () -> dao.get("first"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("first"));
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),
                 testableCertificate.getCreateDate().format(DateTimeFormatter.ISO_DATE));
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),

@@ -36,9 +36,15 @@ public class TagDaoTest extends InMemoryDbConfig {
     }
 
     @Test
-    public void get() {
-        assertEquals(1, dao.get("first tag").getId());
-        assertThrows(EmptyResultDataAccessException.class, () -> dao.get("ninth tag"));
+    public void getByName() {
+        assertEquals(1, dao.getByName("first tag").getId());
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("ninth tag"));
+    }
+
+    @Test
+    public void getById(){
+        assertEquals(1, dao.getById(1).getId());
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("ninth tag"));
     }
 
     @Test
