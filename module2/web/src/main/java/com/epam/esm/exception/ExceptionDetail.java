@@ -1,10 +1,15 @@
 package com.epam.esm.exception;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 
+
+@Getter
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ExceptionDetail {
 
 
@@ -17,7 +22,7 @@ public enum ExceptionDetail {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "exception.message.50001", 50001);
 
 
-    @Getter private final HttpStatus httpStatus;
-    @Getter private final String message;
-    @Getter private final int errorCode;
+    HttpStatus httpStatus;
+    String message;
+    int errorCode;
 }
