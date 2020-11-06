@@ -32,8 +32,8 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public void save(Tag tag) {
-        tagDao.save(tag);
+    public long save(Tag tag) {
+        return tagDao.save(tag);
     }
 
     @Override

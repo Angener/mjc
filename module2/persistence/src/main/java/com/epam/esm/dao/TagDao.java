@@ -10,6 +10,6 @@ public interface TagDao {
      Tag getByName(String name);
      Tag getById(long id);
      List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
-     void save(Tag tag);
+     long save(Tag tag);
      void delete(Tag tag);
 }

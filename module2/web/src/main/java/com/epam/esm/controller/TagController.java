@@ -10,11 +10,13 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -44,9 +46,10 @@ public class TagController {
     }
 
     @PostMapping("/tags")
-    public void save(@RequestBody Tag tag) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public long save(@RequestBody Tag tag) {
         try {
-            service.save(tag);
+            return service.save(tag);
         } catch (DataIntegrityViolationException ex) {
             throw new LocalizedControllerException(ExceptionDetail.TAG_DOES_NOT_CONTAIN_NAME);
         }

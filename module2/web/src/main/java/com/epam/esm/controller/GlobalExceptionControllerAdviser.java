@@ -34,15 +34,15 @@ public class GlobalExceptionControllerAdviser {
         return messageSource.getMessage(ex.getMessage(), null, locale);
     }
 
-    @ExceptionHandler({RuntimeException.class})
-    public ResponseEntity<Object> handleUnregisterException(Locale locale){
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("errorMessage", resolveResourceBundle(locale));
-        parameters.put("errorCode", 50001);
-        return new ResponseEntity<>(parameters, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private String resolveResourceBundle(Locale locale) {
-        return messageSource.getMessage(ExceptionDetail.INTERNAL_SERVER_ERROR.getMessage(), null, locale);
-    }
+//    @ExceptionHandler({RuntimeException.class})
+//    public ResponseEntity<Object> handleUnregisterException(Locale locale){
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("errorMessage", resolveResourceBundle(locale));
+//        parameters.put("errorCode", 50001);
+//        return new ResponseEntity<>(parameters, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+//
+//    private String resolveResourceBundle(Locale locale) {
+//        return messageSource.getMessage(ExceptionDetail.INTERNAL_SERVER_ERROR.getMessage(), null, locale);
+//    }
 }

@@ -38,10 +38,12 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void save(GiftCertificate certificate, List<Tag> tags) {
+    public long save(GiftCertificate certificate, List<Tag> tags) {
+        long id;
         saveTags(tags);
-        updateTable(SqlScript.SAVE_CERTIFICATE.getScript(), certificate);
+        id = updateTableWithIdReturn(SqlScript.SAVE_CERTIFICATE.getScript(), certificate);
         saveReferencesBetweenCertificatesAndTags(getByName(certificate.getName()), updateTagsId(tags));
+        return id;
     }
 
     private void saveTags(List<Tag> tags) {

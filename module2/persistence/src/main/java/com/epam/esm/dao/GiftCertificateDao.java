@@ -7,7 +7,7 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 
 public interface GiftCertificateDao {
-    void save(GiftCertificate certificate, List<Tag> tags);
+    long save(GiftCertificate certificate, List<Tag> tags);
 
     List<GiftCertificate> getAll();
 

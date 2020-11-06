@@ -24,10 +24,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     @Transactional
-    public void save(GiftCertificateDto dto) {
+    public long save(GiftCertificateDto dto) {
         GiftCertificate certificate = dto.getGiftCertificate();
         List<Tag> tags = dto.getTags();
-        giftCertificateDao.save(certificate, tags);
+        return giftCertificateDao.save(certificate, tags);
     }
 
     @Override

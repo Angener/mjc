@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -52,8 +53,9 @@ public class TagDaoImpl extends Dao<Tag> implements TagDao {
     }
 
     @Override
-    public void save(Tag tag) {
-        updateTable(SqlScript.SAVE_TAG.getScript(), tag);
+    @Transactional
+    public long save(Tag tag) {
+       return updateTableWithIdReturn(SqlScript.SAVE_TAG.getScript(), tag);
     }
 
     @Override

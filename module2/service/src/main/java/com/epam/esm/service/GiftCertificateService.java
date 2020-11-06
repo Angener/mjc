@@ -7,7 +7,7 @@ import com.epam.esm.exception.UpdatingForbiddenFieldsException;
 import java.util.List;
 
 public interface GiftCertificateService {
-    void save(GiftCertificateDto dto);
+    long save(GiftCertificateDto dto);
 
     List<GiftCertificate> getAll();
 
