@@ -2,7 +2,7 @@ package com.epam.esm.exception;
 
 import lombok.Getter;
 
-public class LocalizedControllerException extends Exception {
+public class LocalizedControllerException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     @Getter private ExceptionDetail exceptionDetail;
 
