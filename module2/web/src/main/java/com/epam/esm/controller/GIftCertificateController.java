@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,25 +62,27 @@ public class GIftCertificateController {
     public String getAll() throws IOException {
         try {
             return mapper.writeValueAsString(service.getAll());
-        } catch (EmptyResultDataAccessException ex){
+        } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
         }
     }
 
     @GetMapping("/giftCertificates/{id}")
-    public String get(@PathVariable long id) throws IOException {
+    public String getById(@PathVariable long id) throws IOException {
         try {
             return mapper.writeValueAsString(service.getById(id));
-        } catch (EmptyResultDataAccessException ex){
+        } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
         }
     }
 
-
-    //TODO this method is refactoring now.
-    // It will be able returns certificates by tag, part name or description and sort them.
-
-
+    @GetMapping("/giftCertificates/search")
+    public String get(@RequestParam(required = false, defaultValue = "") String tagName,
+                      @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
+                      @RequestParam(required = false) boolean nameSort,
+                      @RequestParam(required = false) boolean dateSort) throws IOException {
+        return mapper.writeValueAsString(service.get(tagName, partNameOrDesc, nameSort, dateSort));
+    }
 
     @DeleteMapping("/giftCertificates")
     public void delete(@RequestBody GiftCertificate certificate) {

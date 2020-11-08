@@ -1,6 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.TagDao;
+import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,11 @@ public class TagServiceImpl implements TagService {
     @Override
     public List<Tag> getAll() {
         return tagDao.getAll();
+    }
+
+    @Override
+    public List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate) {
+        return tagDao.getAllGiftCertificateTags(giftCertificate);
     }
 
     @Override

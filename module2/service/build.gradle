@@ -13,5 +13,14 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
     compile group: 'org.springframework', name: 'spring-context', version: '5.2.9.RELEASE'
     compile group: 'com.google.guava', name: 'guava', version: '30.0-jre'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+    testImplementation group: 'org.springframework', name: 'spring-test', version: '5.2.9.RELEASE'
     implementation project(':persistence')
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'default'
 }
