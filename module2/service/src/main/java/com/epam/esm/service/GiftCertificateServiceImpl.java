@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -26,7 +27,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     @Transactional
     public long save(GiftCertificateDto dto) {
         GiftCertificate certificate = dto.getGiftCertificate();
-        List<Tag> tags = dto.getTags();
+        Set<Tag> tags = dto.getTags();
         return giftCertificateDao.save(certificate, tags);
     }
 
@@ -49,7 +50,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                         field.trim().toLowerCase().equals("lastupdatedate"));
     }
 
-    private void updateGiftCertificate(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags) {
+    private void updateGiftCertificate(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
         giftCertificateDao.update(certificate, fields, tags);
     }
 

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -15,5 +15,5 @@ import java.util.List;
 public class GiftCertificateDto {
     GiftCertificate giftCertificate;
     String[] fields;
-    List<Tag> tags;
+    Set<Tag> tags;
 }

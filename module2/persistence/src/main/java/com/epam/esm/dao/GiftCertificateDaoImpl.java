@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -38,7 +39,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public long save(GiftCertificate certificate, List<Tag> tags) {
+    public long save(GiftCertificate certificate, Set<Tag> tags) {
         long id;
         saveTags(tags);
         id = updateTableWithIdReturn(SqlScript.SAVE_CERTIFICATE.getScript(), certificate);
@@ -46,7 +47,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
         return id;
     }
 
-    private void saveTags(List<Tag> tags) {
+    private void saveTags(Set<Tag> tags) {
         tags.forEach(tagDao::save);
     }
 
@@ -60,7 +61,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
                 });
     }
 
-    private List<Tag> updateTagsId(List<Tag> tags) {
+    private List<Tag> updateTagsId(Set<Tag> tags) {
         return tags.stream()
                 .map(tag -> tagDao.getByName(tag.getName()))
                 .collect(Collectors.toList());
@@ -111,7 +112,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     @Override
     @Transactional
-    public void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags) {
+    public void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
         updateTable(getUpdatingSqlScript(fields), certificate);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
     }
@@ -133,17 +134,17 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     }
 
     private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(GiftCertificate certificate,
-                                                                              List<Tag> tags) {
+                                                                              Set<Tag> tags) {
         if (isTagsPassedForUpdate(tags)) {
             updateReferencesBetweenCertificatesAndTags(certificate, tags);
         }
     }
 
-    private boolean isTagsPassedForUpdate(List<Tag> tags) {
+    private boolean isTagsPassedForUpdate(Set<Tag> tags) {
         return tags.size() > 0;
     }
 
-    private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
+    private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, Set<Tag> tags) {
         saveTags(tags);
         updateTable(SqlScript.DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS.getScript(), certificate);
         saveReferencesBetweenCertificatesAndTags(certificate, updateTagsId(tags));

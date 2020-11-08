@@ -53,7 +53,6 @@ public class TagDaoImpl extends Dao<Tag> implements TagDao {
     }
 
     @Override
-    @Transactional
     public long save(Tag tag) {
        return updateTableWithIdReturn(SqlScript.SAVE_TAG.getScript(), tag);
     }

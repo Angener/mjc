@@ -5,9 +5,10 @@ import com.epam.esm.entity.Tag;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
+import java.util.Set;
 
 public interface GiftCertificateDao {
-    long save(GiftCertificate certificate, List<Tag> tags);
+    long save(GiftCertificate certificate, Set<Tag> tags);
 
     List<GiftCertificate> getAll();
 
@@ -19,7 +20,7 @@ public interface GiftCertificateDao {
 
     List<GiftCertificate> searchByPartNameOrDescription(String partName);
 
-    void update(GiftCertificate certificate, String[] fields, @Nullable List<Tag> tags);
+    void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags);
 
     void delete(GiftCertificate certificate);
 }

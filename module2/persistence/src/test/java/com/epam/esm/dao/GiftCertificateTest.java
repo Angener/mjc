@@ -19,15 +19,14 @@ import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GiftCertificateTest extends InMemoryDbConfig {
     @Autowired
     private GiftCertificateDao dao;
     private GiftCertificate certificate;
-    private List<Tag> tags;
+    private Set<Tag> tags;
 
     @BeforeEach
     void setUp() throws SQLException {
@@ -46,7 +45,8 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         when(certificate.getDescription()).thenReturn("sixth gift card");
         when(certificate.getPrice()).thenReturn(new BigDecimal("23.3"));
         when(certificate.getDuration()).thenReturn(3);
-        tags = Collections.singletonList(new Tag(1, "first tag"));
+        tags = new HashSet<>();
+        tags.add(new Tag(1, "first tag"));
     }
 
     @Test
@@ -100,8 +100,10 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     @Test
     public void update() {
         String[] fields = {"name", "description", "price", "duration"};
-        List<Tag> updatableTag = Arrays.asList(new Tag("second tag"),
-                new Tag("third tag"), new Tag("fourth tag"));
+        Set<Tag> updatableTag = new HashSet<>();
+        updatableTag.add(new Tag("second tag"));
+        updatableTag.add(new Tag("third tag"));
+        updatableTag.add(new Tag("fourth tag"));
         when(certificate.getId()).thenReturn(1L);
         dao.update(certificate, fields, updatableTag);
         GiftCertificate testableCertificate = dao.getByName("sixth");
