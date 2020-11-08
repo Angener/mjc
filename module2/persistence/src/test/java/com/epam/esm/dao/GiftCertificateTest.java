@@ -101,7 +101,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     public void update() {
         String[] fields = {"name", "description", "price", "duration"};
         Set<Tag> updatableTag = new HashSet<>();
-        updatableTag.add(new Tag("second tag"));
+        updatableTag.add(new Tag(2, "second tag"));
         updatableTag.add(new Tag("third tag"));
         updatableTag.add(new Tag("fourth tag"));
         when(certificate.getId()).thenReturn(1L);

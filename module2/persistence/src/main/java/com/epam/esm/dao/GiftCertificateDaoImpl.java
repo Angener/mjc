@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -43,28 +42,24 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
         long id;
         saveTags(tags);
         id = updateTableWithIdReturn(SqlScript.SAVE_CERTIFICATE.getScript(), certificate);
-        saveReferencesBetweenCertificatesAndTags(getByName(certificate.getName()), updateTagsId(tags));
+        saveReferencesBetweenCertificatesAndTags(id, tags);
         return id;
     }
 
     private void saveTags(Set<Tag> tags) {
-        tags.forEach(tagDao::save);
+        tags.stream()
+                .filter(tag -> tag.getId() == 0)
+                .forEach(tag -> tag.setId(tagDao.save(tag)));
     }
 
-    private void saveReferencesBetweenCertificatesAndTags(GiftCertificate certificate, List<Tag> tags) {
+    private void saveReferencesBetweenCertificatesAndTags(long certificateId, Set<Tag> tags) {
         tags.forEach(
                 tag -> {
                     Map<String, Object> parameter = new HashMap<>();
                     parameter.put("tag_id", tag.getId());
-                    parameter.put("gift_certificate_id", certificate.getId());
+                    parameter.put("gift_certificate_id", certificateId);
                     simpleJdbcInsert.execute(parameter);
                 });
-    }
-
-    private List<Tag> updateTagsId(Set<Tag> tags) {
-        return tags.stream()
-                .map(tag -> tagDao.getByName(tag.getName()))
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -147,7 +142,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, Set<Tag> tags) {
         saveTags(tags);
         updateTable(SqlScript.DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS.getScript(), certificate);
-        saveReferencesBetweenCertificatesAndTags(certificate, updateTagsId(tags));
+        saveReferencesBetweenCertificatesAndTags(certificate.getId(), tags);
     }
 
     @Override
