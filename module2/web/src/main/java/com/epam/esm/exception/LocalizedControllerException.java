@@ -4,7 +4,8 @@ import lombok.Getter;
 
 public class LocalizedControllerException extends RuntimeException {
     private static final long serialVersionUID = 1L;
-    @Getter private ExceptionDetail exceptionDetail;
+    @Getter
+    private ExceptionDetail exceptionDetail;
 
     public LocalizedControllerException(ExceptionDetail exceptionDetails) {
         super(exceptionDetails.getMessage());
