@@ -81,7 +81,7 @@ public class GIftCertificateController {
                       @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
                       @RequestParam(required = false) boolean nameSort,
                       @RequestParam(required = false) boolean dateSort) throws IOException {
-        return mapper.writeValueAsString(service.get(tagName, partNameOrDesc, nameSort, dateSort));
+        return mapper.writeValueAsString(service.search(tagName, partNameOrDesc, nameSort, dateSort));
     }
 
     @DeleteMapping("/giftCertificates")

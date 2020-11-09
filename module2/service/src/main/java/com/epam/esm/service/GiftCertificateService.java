@@ -1,7 +1,7 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dto.GiftCertificateDto;
-import com.epam.esm.dto.GiftCertificatesWithTagsDto;
+import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.UpdatingForbiddenFieldsException;
 import org.springframework.lang.Nullable;
@@ -13,12 +13,12 @@ public interface GiftCertificateService {
 
     List<GiftCertificate> getAll();
 
-    List<GiftCertificatesWithTagsDto> get(@Nullable String tagName, @Nullable String partOfNameOrDesc,
-                                          boolean nameSort, boolean dateSort);
+    List<GiftCertificateWithTagsDto> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
+                                            boolean nameSort, boolean dateSort);
 
     GiftCertificate getById(long id);
 
-    GiftCertificate get(String certificateName);
+    GiftCertificate search(String certificateName);
 
     List<GiftCertificate> getByTagName(String tagName);
 

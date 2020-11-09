@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GiftCertificatesWithTagsDto {
+public class GiftCertificateWithTagsDto {
     @NonNull GiftCertificate certificate;
     List<Tag> tags;
 }
