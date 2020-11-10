@@ -16,6 +16,16 @@ import java.util.List;
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TagDaoImpl extends Dao<Tag> implements TagDao {
+    private static final String GET_ALL_TAGS = "SELECT * FROM tag;";
+    private static final String GET_TAG_BY_ID = "SELECT * FROM tag WHERE id = :param;";
+    private static final String GET_TAG_BY_NAME = "SELECT * FROM tag WHERE name = :param;";
+    private static final String GET_ALL_CERTIFICATE_TAGS =
+            "SELECT tag.id, tag.name FROM tag " +
+                    "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
+                    "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
+                    "WHERE gift_certificate.id = :id;";
+    private static final String SAVE_TAG = "INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING;";
+    private static final String DELETE_TAG = "DELETE FROM tag WHERE id = :id;";
 
     @Autowired
     public TagDaoImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate){
@@ -24,7 +34,7 @@ public class TagDaoImpl extends Dao<Tag> implements TagDao {
 
     @Override
     public List<Tag> getAll() {
-        return getAllEntityFromTable(SqlScript.GET_ALL_TAGS.getScript(), getTagRowMap());
+        return getAllEntityFromTable(GET_ALL_TAGS, getTagRowMap());
     }
 
     private RowMapper<Tag> getTagRowMap() {
@@ -35,29 +45,29 @@ public class TagDaoImpl extends Dao<Tag> implements TagDao {
 
     @Override
     public Tag getById(long id) {
-        return getEntityFromTable(SqlScript.GET_TAG_BY_ID.getScript(), id, getTagRowMap());
+        return getEntityFromTable(GET_TAG_BY_ID, id, getTagRowMap());
     }
 
     @Override
     public Tag getByName(String name) {
-        return getEntityFromTable(SqlScript.GET_TAG_BY_NAME.getScript(), name, getTagRowMap());
+        return getEntityFromTable(GET_TAG_BY_NAME, name, getTagRowMap());
     }
 
     @Override
     public List<Tag> getAllGiftCertificateTags(GiftCertificate certificate) {
         return getAllEntitiesFromTableReferencedEntity(
-                SqlScript.GET_ALL_CERTIFICATE_TAGS.getScript(),
+                GET_ALL_CERTIFICATE_TAGS,
                 certificate,
                 getTagRowMap());
     }
 
     @Override
     public long save(Tag tag) {
-       return updateTableWithIdReturn(SqlScript.SAVE_TAG.getScript(), tag);
+       return updateTableWithIdReturn(SAVE_TAG, tag);
     }
 
     @Override
     public void delete(Tag tag) {
-        updateTable(SqlScript.DELETE_TAG.getScript(), tag);
+        updateTable(DELETE_TAG, tag);
     }
 }
