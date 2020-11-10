@@ -1,6 +1,5 @@
 package com.epam.esm.service;
 
-import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.dao.GiftCertificateDaoImpl;
 import com.epam.esm.dto.GiftCertificateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
@@ -14,14 +13,11 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -34,8 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@ExtendWith(SpringExtension.class)
-@SpringJUnitConfig({ServiceConfig.class})
 public class GiftCertificateServiceImplTest {
     @InjectMocks @Spy GiftCertificateServiceImpl service;
     @Mock GiftCertificateDaoImpl dao;

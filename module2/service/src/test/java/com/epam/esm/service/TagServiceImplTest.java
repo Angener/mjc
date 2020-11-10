@@ -1,6 +1,5 @@
 package com.epam.esm.service;
 
-import com.epam.esm.config.ServiceConfig;
 import com.epam.esm.dao.TagDaoImpl;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
@@ -11,19 +10,14 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.Arrays;
 import java.util.List;
 
-@ExtendWith(SpringExtension.class)
-@SpringJUnitConfig({ServiceConfig.class})
 public class TagServiceImplTest {
     @InjectMocks @Spy TagServiceImpl service;
     @Mock TagDaoImpl dao;
