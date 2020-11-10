@@ -23,6 +23,7 @@ dependencies {
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.3'
     runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.13.3'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
 }
 
 test {
