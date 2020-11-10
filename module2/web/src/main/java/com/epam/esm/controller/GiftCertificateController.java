@@ -30,7 +30,7 @@ import java.io.IOException;
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class GIftCertificateController {
+public class GiftCertificateController {
 
     GiftCertificateService service;
     ObjectMapper mapper;
