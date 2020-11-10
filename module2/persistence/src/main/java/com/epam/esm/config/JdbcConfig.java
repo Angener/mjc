@@ -1,7 +1,5 @@
 package com.epam.esm.config;
 
-import com.epam.esm.dao.GiftCertificateDaoImpl;
-import com.epam.esm.dao.TagDaoImpl;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +17,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @PropertySource("classpath:${spring.profiles.active}.properties")
-@ComponentScan(basePackageClasses = {JdbcConfig.class, TagDaoImpl.class, GiftCertificateDaoImpl.class})
+@ComponentScan(basePackages = {"com.epam.esm.dao"})
 @EnableTransactionManagement
 public class JdbcConfig {
 
