@@ -22,12 +22,6 @@ abstract class Dao<T> {
 
     JdbcTemplate jdbcTemplate;
     NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    @NonFinal protected SimpleJdbcInsert simpleJdbcInsert;
-
-    Dao(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
 
     List<T> getAllEntityFromTable(String sqlScript, RowMapper<T> mapper) {
         return jdbcTemplate.query(sqlScript, mapper);

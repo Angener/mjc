@@ -26,14 +26,16 @@ import java.util.Set;
 public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements GiftCertificateDao {
 
     TagDao tagDao;
+    SimpleJdbcInsert simpleJdbcInsert;
 
     @Autowired
     public GiftCertificateDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
                                   SimpleJdbcInsert simpleJdbcInsert,
                                   JdbcTemplate jdbcTemplate,
                                   TagDao tagDao) {
-        super(jdbcTemplate, namedParameterJdbcTemplate, simpleJdbcInsert);
+        super(jdbcTemplate, namedParameterJdbcTemplate);
         this.tagDao = tagDao;
+        this.simpleJdbcInsert = simpleJdbcInsert;
     }
 
     @Override
