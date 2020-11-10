@@ -30,29 +30,37 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     TagDao tagDao;
     SimpleJdbcInsert simpleJdbcInsert;
 
-    private static final String SAVE_CERTIFICATE =
+    static String SAVE_CERTIFICATE =
             "INSERT INTO gift_certificate (name, description, price, duration) " +
                     "VALUES (:name, :description, :price, :duration);";
-    private static final String GET_ALL_CERTIFICATES = "SELECT * FROM gift_certificate;";
-    private static final String GET_CERTIFICATE_BY_ID = "SELECT * FROM gift_certificate WHERE id = :param;";
-    private static final String GET_CERTIFICATE_BY_NAME = "SELECT * FROM gift_certificate WHERE name = :param;";
-    private static final String GET_CERTIFICATES_BY_TAG_NAME =
+    static String GET_ALL_CERTIFICATES = "SELECT * FROM gift_certificate;";
+    static String GET_CERTIFICATE_BY_ID = "SELECT * FROM gift_certificate WHERE id = :param;";
+    static String GET_CERTIFICATE_BY_NAME = "SELECT * FROM gift_certificate WHERE name = :param;";
+    static String GET_CERTIFICATES_BY_TAG_NAME =
             "SELECT gc.id, gc.name, gc.description, gc.price, " +
                     "gc.create_date, gc.last_update_date, gc.duration " +
                     "FROM gift_certificate gc " +
                     "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
                     "JOIN tag ON tag.id = tgc.tag_id " +
                     "WHERE tag.name= :param;";
-    private static final String GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION =
+    static String GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION =
             "SELECT * FROM gift_certificate WHERE name LIKE :param " +
                     "OR description LIKE :param;";
-    private static final String UPDATE_CERTIFICATE =
+    static String UPDATE_CERTIFICATE =
             "UPDATE gift_certificate " +
                     "SET ${values}, " +
                     "last_update_date = CURRENT_TIMESTAMP " +
                     "WHERE id = :id;";
-    private static final String DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS = "DELETE FROM tag_gift_certificate WHERE gift_certificate_id= :id;";
-    private static final String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE id = :id;";
+    static String DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS = "DELETE FROM tag_gift_certificate WHERE gift_certificate_id= :id;";
+    static String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE id = :id;";
+    static RowMapper<GiftCertificate> mapper = (rs, rowNum) -> new GiftCertificate(
+            rs.getLong("id"),
+            rs.getString("name"),
+            rs.getString("description"),
+            rs.getBigDecimal("price"),
+            rs.getTimestamp("create_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
+            rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
+            rs.getInt("duration"));
 
     @Autowired
     public GiftCertificateDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
@@ -92,41 +100,29 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     @Override
     public List<GiftCertificate> getAll() {
-        return getAllEntityFromTable(GET_ALL_CERTIFICATES, getGiftCertificateRowMap());
+        return getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
     }
 
     @Override
     public GiftCertificate getById(long id) {
-        return getEntityFromTable(GET_CERTIFICATE_BY_ID, id, getGiftCertificateRowMap());
+        return getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
     }
 
     @Override
     public GiftCertificate getByName(String name) {
-        return getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, getGiftCertificateRowMap());
-    }
-
-    private RowMapper<GiftCertificate> getGiftCertificateRowMap() {
-        return (rs, rowNum) -> new GiftCertificate(
-                rs.getLong("id"),
-                rs.getString("name"),
-                rs.getString("description"),
-                rs.getBigDecimal("price"),
-                rs.getTimestamp("create_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
-                rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
-                rs.getInt("duration"));
+        return getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
     }
 
     @Override
     public List<GiftCertificate> getByTagName(String name) {
-        return getEntityListFromTable(GET_CERTIFICATES_BY_TAG_NAME, name, getGiftCertificateRowMap());
+        return getEntityListFromTable(GET_CERTIFICATES_BY_TAG_NAME, name, mapper);
     }
 
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(String partNameOrDescription) {
         return getEntityListFromTable(
                 GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION,
-                prepareParameterForInsertingToSqlScript(partNameOrDescription),
-                getGiftCertificateRowMap());
+                prepareParameterForInsertingToSqlScript(partNameOrDescription), mapper);
     }
 
     private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
