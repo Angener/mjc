@@ -42,16 +42,29 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
                     "FROM gift_certificate gc " +
                     "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
                     "JOIN tag ON tag.id = tgc.tag_id " +
-                    "WHERE tag.name= :param;";
+                    "WHERE tag.name= :param " +
+                    "${value};";
     static String GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION =
-            "SELECT * FROM gift_certificate WHERE name LIKE :param " +
-                    "OR description LIKE :param;";
+            "SELECT * FROM gift_certificate gc WHERE name LIKE :param " +
+                    "OR description LIKE :param " +
+                    "${value};";
+    static String GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION =
+            "SELECT gc.id, gc.name, gc.description, gc.price, " +
+                    "gc.create_date, gc.last_update_date, gc.duration " +
+                    "FROM gift_certificate gc " +
+                    "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
+                    "JOIN tag ON tag.id = tgc.tag_id " +
+                    "WHERE tag.name= :param " +
+                    "OR gc.name LIKE :text " +
+                    "OR gc.description LIKE :text " +
+                    "${value}";
     static String UPDATE_CERTIFICATE =
             "UPDATE gift_certificate " +
-                    "SET ${values}, " +
+                    "SET ${value}, " +
                     "last_update_date = CURRENT_TIMESTAMP " +
                     "WHERE id = :id;";
-    static String DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS = "DELETE FROM tag_gift_certificate WHERE gift_certificate_id= :id;";
+    static String DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS = "DELETE FROM tag_gift_certificate " +
+            "WHERE gift_certificate_id= :id;";
     static String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE id = :id;";
     static RowMapper<GiftCertificate> mapper = (rs, rowNum) -> new GiftCertificate(
             rs.getLong("id"),
@@ -114,15 +127,34 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     }
 
     @Override
-    public List<GiftCertificate> getByTagName(String name) {
-        return getEntityListFromTable(GET_CERTIFICATES_BY_TAG_NAME, name, mapper);
+    public List<GiftCertificate> getByTagName(SortCertificatesType type, String name) {
+        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
+                getParameterMap(name, null), mapper);
+    }
+
+    private String substituteSqlQueryVariable(String value, String source) {
+        return new StringSubstitutor(Collections.singletonMap("value", value)).replace(source);
     }
 
     @Override
-    public List<GiftCertificate> searchByPartNameOrDescription(String partNameOrDescription) {
+    public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type, String partNameOrDescription) {
+        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
+                getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
+                mapper);
+    }
+
+    @Override
+    public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName, String text) {
         return getEntityListFromTable(
-                GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION,
-                prepareParameterForInsertingToSqlScript(partNameOrDescription), mapper);
+                substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
+                getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
+    }
+
+    private Map<String, String> getParameterMap(String param, @Nullable String text) {
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("param", param);
+        parameters.put("text", text);
+        return parameters;
     }
 
     private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
@@ -132,13 +164,8 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     @Transactional
     public void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
-        updateTable(getUpdatingSqlScript(fields), certificate);
+        updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
-    }
-
-    private String getUpdatingSqlScript(String[] fields) {
-        return new StringSubstitutor(Collections.singletonMap("values", getUpdatableParameters(fields)))
-                .replace(UPDATE_CERTIFICATE);
     }
 
     private String getUpdatableParameters(String[] fields) {
