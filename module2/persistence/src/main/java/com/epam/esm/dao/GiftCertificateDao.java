@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface GiftCertificateDao {
+
     long save(GiftCertificate certificate, Set<Tag> tags);
 
     List<GiftCertificate> getAll();
@@ -16,9 +17,11 @@ public interface GiftCertificateDao {
 
     GiftCertificate getByName(String certificateName);
 
-    List<GiftCertificate> getByTagName(String tagName);
+    List<GiftCertificate> getByTagName(SortCertificatesType type, String tagName);
 
-    List<GiftCertificate> searchByPartNameOrDescription(String partName);
+    List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type, String partName);
+
+    List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName, String text);
 
     void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags);
 
