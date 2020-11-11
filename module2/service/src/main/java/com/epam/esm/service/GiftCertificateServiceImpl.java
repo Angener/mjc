@@ -80,15 +80,15 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
         return certificates;
     }
 
-    private SortCertificatesType getSortType(boolean nameSort, boolean dateSort) {
-        return isSortingRequired(nameSort, dateSort) ? defineSortType(nameSort, dateSort) : SortCertificatesType.DATE_SORT;
+    protected SortCertificatesType getSortType(boolean nameSort, boolean dateSort) {
+        return isSortingRequired(nameSort, dateSort) ? defineSortType(nameSort, dateSort) : SortCertificatesType.NONE;
     }
 
     private boolean isSortingRequired(boolean nameSort, boolean dateSort) {
         return nameSort || dateSort;
     }
 
-    private SortCertificatesType defineSortType(boolean nameSort, boolean dateSort) {
+    protected SortCertificatesType defineSortType(boolean nameSort, boolean dateSort) {
         if (nameSort && dateSort) {
             return SortCertificatesType.DATE_AND_NAME_SORT;
         } else {
@@ -145,12 +145,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificate> getByTagName(String tagName) {
-        return giftCertificateDao.getByTagName(SortCertificatesType.NAME_SORT, tagName);
+        return giftCertificateDao.getByTagName(SortCertificatesType.NONE, tagName);
     }
 
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(String partName) {
-        return giftCertificateDao.searchByPartNameOrDescription(SortCertificatesType.NAME_SORT, partName);
+        return giftCertificateDao.searchByPartNameOrDescription(SortCertificatesType.NONE, partName);
     }
 
     @Override

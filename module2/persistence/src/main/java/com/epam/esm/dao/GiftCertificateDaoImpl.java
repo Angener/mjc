@@ -129,7 +129,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     public List<GiftCertificate> getByTagName(SortCertificatesType type, String name) {
         return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
-                getParameterMap(type.getSortType(), name, null), mapper);
+                getParameterMap(name, null), mapper);
     }
 
     private String substituteSqlQueryVariable(String value, String source) {
@@ -139,7 +139,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type, String partNameOrDescription) {
         return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
-                getParameterMap(type.getSortType(), prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
+                getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
                 mapper);
     }
 
@@ -147,12 +147,11 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName, String text) {
         return getEntityListFromTable(
                 substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
-                getParameterMap(type.getSortType(), tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
+                getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
     }
 
-    private Map<String, String> getParameterMap(String sort, String param, @Nullable String text) {
+    private Map<String, String> getParameterMap(String param, @Nullable String text) {
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("sort", sort);
         parameters.put("param", param);
         parameters.put("text", text);
         return parameters;
