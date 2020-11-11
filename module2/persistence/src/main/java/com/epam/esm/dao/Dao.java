@@ -13,6 +13,7 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -49,10 +50,7 @@ abstract class Dao<T> {
         return namedParameterJdbcTemplate.query(sqlScript, new BeanPropertySqlParameterSource(certificate), mapper);
     }
 
-    List<T> getEntityListFromTable(String sqlScript, Object param, RowMapper<T> rowMapper) {
-        return namedParameterJdbcTemplate.query(
-                sqlScript,
-                Collections.singletonMap("param", param),
-                rowMapper);
+    List<T> getEntityListFromTable(String sqlScript, Map<String, String> param, RowMapper<T> rowMapper) {
+        return namedParameterJdbcTemplate.query(sqlScript, param, rowMapper);
     }
 }
