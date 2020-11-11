@@ -51,8 +51,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     private boolean isUpdatableRequestContainsForbiddenFields(String[] fields) {
         return Arrays.stream(fields)
-                .anyMatch(field -> field.trim().toLowerCase().equals("createdate") ||
-                        field.trim().toLowerCase().equals("lastupdatedate"));
+                .anyMatch(field -> field.trim().equalsIgnoreCase("createdate") ||
+                        field.trim().equalsIgnoreCase("lastupdatedate"));
     }
 
     private void updateGiftCertificate(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
