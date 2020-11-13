@@ -1,5 +1,8 @@
 package com.epam.esm.config;
 
+import com.epam.esm.dao.DatabaseResolver;
+import com.epam.esm.entity.GiftCertificate;
+import com.epam.esm.entity.Tag;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,5 +72,17 @@ public class JdbcConfig {
     @Bean
     public DataSourceTransactionManager getDataSourceTransactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean("giftCertificateDatabaseResolver")
+    public DatabaseResolver<GiftCertificate> getGiftCertificateTableDatabaseResolver(JdbcTemplate jdbcTemplate,
+                                                                 NamedParameterJdbcTemplate namedParameterJdbcTemplate){
+        return new DatabaseResolver<>(jdbcTemplate, namedParameterJdbcTemplate);
+    }
+
+    @Bean("tagDatabaseResolver")
+    public DatabaseResolver<Tag> getTagTableDatabaseResolver(JdbcTemplate jdbcTemplate,
+                                                     NamedParameterJdbcTemplate namedParameterJdbcTemplate){
+        return new DatabaseResolver<>(jdbcTemplate, namedParameterJdbcTemplate);
     }
 }

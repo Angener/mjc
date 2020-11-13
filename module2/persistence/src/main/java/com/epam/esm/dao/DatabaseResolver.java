@@ -2,8 +2,8 @@ package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -15,12 +15,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-abstract class Dao<T> {
+public final class DatabaseResolver<T> {
 
     JdbcTemplate jdbcTemplate;
     NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @Autowired
+    public DatabaseResolver(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
     List<T> getAllEntityFromTable(String sqlScript, RowMapper<T> mapper) {
         return jdbcTemplate.query(sqlScript, mapper);

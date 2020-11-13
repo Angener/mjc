@@ -6,9 +6,8 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
@@ -25,11 +24,7 @@ import java.util.Set;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements GiftCertificateDao {
-
-    TagDao tagDao;
-    SimpleJdbcInsert simpleJdbcInsert;
-
+public class GiftCertificateDaoImpl implements GiftCertificateDao {
     static String SAVE_CERTIFICATE =
             "INSERT INTO gift_certificate (name, description, price, duration) " +
                     "VALUES (:name, :description, :price, :duration);";
@@ -75,14 +70,18 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
             rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
             rs.getInt("duration"));
 
+    TagDao tagDao;
+    SimpleJdbcInsert simpleJdbcInsert;
+    DatabaseResolver<GiftCertificate> databaseResolver;
+
     @Autowired
-    public GiftCertificateDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
-                                  SimpleJdbcInsert simpleJdbcInsert,
-                                  JdbcTemplate jdbcTemplate,
-                                  TagDao tagDao) {
-        super(jdbcTemplate, namedParameterJdbcTemplate);
+    public GiftCertificateDaoImpl(SimpleJdbcInsert simpleJdbcInsert,
+                                  TagDao tagDao,
+                                  @Qualifier("giftCertificateDatabaseResolver")
+                                          DatabaseResolver<GiftCertificate> databaseResolver) {
         this.tagDao = tagDao;
         this.simpleJdbcInsert = simpleJdbcInsert;
+        this.databaseResolver = databaseResolver;
     }
 
     @Override
@@ -90,7 +89,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     public long save(GiftCertificate certificate, Set<Tag> tags) {
         long id;
         saveTags(tags);
-        id = updateTableWithIdReturn(SAVE_CERTIFICATE, certificate);
+        id = databaseResolver.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate);
         saveReferencesBetweenCertificatesAndTags(id, tags);
         return id;
     }
@@ -113,22 +112,22 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     @Override
     public List<GiftCertificate> getAll() {
-        return getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
+        return databaseResolver.getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
     }
 
     @Override
     public GiftCertificate getById(long id) {
-        return getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
+        return databaseResolver.getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
     }
 
     @Override
     public GiftCertificate getByName(String name) {
-        return getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
+        return databaseResolver.getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
     }
 
     @Override
     public List<GiftCertificate> getByTagName(SortCertificatesType type, String name) {
-        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
+        return databaseResolver.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
                 getParameterMap(name, null), mapper);
     }
 
@@ -139,7 +138,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type,
                                                                String partNameOrDescription) {
-        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
+        return databaseResolver.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
                 GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
                 getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
                 mapper);
@@ -148,7 +147,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName,
                                                                      String text) {
-        return getEntityListFromTable(
+        return databaseResolver.getEntityListFromTable(
                 substituteSqlQueryVariable(type.getSortType(),
                         GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
                 getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
@@ -168,7 +167,7 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     @Override
     @Transactional
     public void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
-        updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
+        databaseResolver.updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
     }
 
@@ -196,12 +195,12 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
 
     private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, Set<Tag> tags) {
         saveTags(tags);
-        updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, certificate);
+        databaseResolver.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, certificate);
         saveReferencesBetweenCertificatesAndTags(certificate.getId(), tags);
     }
 
     @Override
     public void delete(GiftCertificate certificate) {
-        updateTable(DELETE_CERTIFICATE, certificate);
+        databaseResolver.updateTable(DELETE_CERTIFICATE, certificate);
     }
 }
