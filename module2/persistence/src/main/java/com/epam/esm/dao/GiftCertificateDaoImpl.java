@@ -137,16 +137,20 @@ public class GiftCertificateDaoImpl extends Dao<GiftCertificate> implements Gift
     }
 
     @Override
-    public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type, String partNameOrDescription) {
-        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
+    public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type,
+                                                               String partNameOrDescription) {
+        return getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
+                GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
                 getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
                 mapper);
     }
 
     @Override
-    public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName, String text) {
+    public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName,
+                                                                     String text) {
         return getEntityListFromTable(
-                substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
+                substituteSqlQueryVariable(type.getSortType(),
+                        GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
                 getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
     }
 
