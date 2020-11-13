@@ -21,12 +21,18 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class JdbcConfig {
 
-    @Value("${postgres.driverClass}") private String driverClass;
-    @Value("${postgres.url}") private String databaseUrl;
-    @Value("${postgres.databaseName}") private String databaseName;
-    @Value("${postgres.username}") private String username;
-    @Value("${postgres.password}") private String password;
-    @Value("${postgres.maxPoolSize}") private int maxPoolSize;
+    @Value("${postgres.driverClass}")
+    private String driverClass;
+    @Value("${postgres.url}")
+    private String databaseUrl;
+    @Value("${postgres.databaseName}")
+    private String databaseName;
+    @Value("${postgres.username}")
+    private String username;
+    @Value("${postgres.password}")
+    private String password;
+    @Value("${postgres.maxPoolSize}")
+    private int maxPoolSize;
 
     @Bean
     public JdbcTemplate getJdbcTemplate(DataSource dataSource) {
@@ -39,7 +45,7 @@ public class JdbcConfig {
     }
 
     @Bean
-    public SimpleJdbcInsert getTag_GiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
+    public SimpleJdbcInsert getTagGiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_gift_certificate");
     }
 

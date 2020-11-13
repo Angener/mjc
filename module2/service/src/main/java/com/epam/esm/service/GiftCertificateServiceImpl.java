@@ -106,11 +106,11 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     private List<GiftCertificate> collect(SortCertificatesType type, String tagName, String partOfName) {
         return (tagName.trim().length() > 0) ?
-                collectCertificatesByTagNameWithOrWithoutByPartNameOrDescription(type, tagName, partOfName)
+                collectByTagAndPartNameOrDescription(type, tagName, partOfName)
                 : (collectByPartNameOrDescriptionOnly(type, partOfName));
     }
 
-    private List<GiftCertificate> collectCertificatesByTagNameWithOrWithoutByPartNameOrDescription
+    private List<GiftCertificate> collectByTagAndPartNameOrDescription
             (SortCertificatesType type, String tagName, String partOfName) {
         return ((partOfName.trim().length() > 0) ? (collectByBothParameters(type, tagName, partOfName)) :
                 (collectByTagNameOnly(type, tagName)));
