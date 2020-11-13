@@ -27,40 +27,40 @@ public class TagDaoImpl implements TagDao {
     static String DELETE_TAG = "DELETE FROM tag WHERE id = :id;";
     static RowMapper<Tag> mapper = (rs, mapRow) -> new Tag(rs.getLong("id"),
             rs.getString("name"));
-    DatabaseResolver<Tag> databaseResolver;
+    DaoHelper daoHelper;
 
     @Autowired
-    public TagDaoImpl(@Qualifier("tagDatabaseResolver") DatabaseResolver<Tag> databaseResolver) {
-        this.databaseResolver = databaseResolver;
+    public TagDaoImpl(DaoHelper daoHelper) {
+        this.daoHelper = daoHelper;
     }
 
     @Override
     public List<Tag> getAll() {
-        return databaseResolver.getAllEntityFromTable(GET_ALL_TAGS, mapper);
+        return daoHelper.getAllEntityFromTable(GET_ALL_TAGS, mapper);
     }
 
     @Override
     public Tag getById(long id) {
-        return databaseResolver.getEntityFromTable(GET_TAG_BY_ID, id, mapper);
+        return daoHelper.getEntityFromTable(GET_TAG_BY_ID, id, mapper);
     }
 
     @Override
     public Tag getByName(String name) {
-        return databaseResolver.getEntityFromTable(GET_TAG_BY_NAME, name, mapper);
+        return daoHelper.getEntityFromTable(GET_TAG_BY_NAME, name, mapper);
     }
 
     @Override
     public List<Tag> getAllGiftCertificateTags(GiftCertificate certificate) {
-        return databaseResolver.getAllEntitiesFromTableReferencedEntity(GET_ALL_CERTIFICATE_TAGS, certificate, mapper);
+        return daoHelper.getAllEntitiesFromTableReferencedEntity(GET_ALL_CERTIFICATE_TAGS, certificate, mapper);
     }
 
     @Override
     public long save(Tag tag) {
-        return databaseResolver.updateTableWithIdReturn(SAVE_TAG, tag);
+        return daoHelper.updateTableWithIdReturn(SAVE_TAG, tag);
     }
 
     @Override
     public void delete(Tag tag) {
-        databaseResolver.updateTable(DELETE_TAG, tag);
+        daoHelper.updateTable(DELETE_TAG, tag);
     }
 }
