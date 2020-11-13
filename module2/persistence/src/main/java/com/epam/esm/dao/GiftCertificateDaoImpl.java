@@ -72,16 +72,15 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     TagDao tagDao;
     SimpleJdbcInsert simpleJdbcInsert;
-    DatabaseResolver<GiftCertificate> databaseResolver;
+    DaoHelper daoHelper;
 
     @Autowired
     public GiftCertificateDaoImpl(SimpleJdbcInsert simpleJdbcInsert,
                                   TagDao tagDao,
-                                  @Qualifier("giftCertificateDatabaseResolver")
-                                          DatabaseResolver<GiftCertificate> databaseResolver) {
+                                  DaoHelper daoHelper) {
         this.tagDao = tagDao;
         this.simpleJdbcInsert = simpleJdbcInsert;
-        this.databaseResolver = databaseResolver;
+        this.daoHelper = daoHelper;
     }
 
     @Override
@@ -89,7 +88,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     public long save(GiftCertificate certificate, Set<Tag> tags) {
         long id;
         saveTags(tags);
-        id = databaseResolver.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate);
+        id = daoHelper.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate);
         saveReferencesBetweenCertificatesAndTags(id, tags);
         return id;
     }
@@ -112,22 +111,22 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     public List<GiftCertificate> getAll() {
-        return databaseResolver.getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
+        return daoHelper.getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
     }
 
     @Override
     public GiftCertificate getById(long id) {
-        return databaseResolver.getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
+        return daoHelper.getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
     }
 
     @Override
     public GiftCertificate getByName(String name) {
-        return databaseResolver.getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
+        return daoHelper.getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
     }
 
     @Override
     public List<GiftCertificate> getByTagName(SortCertificatesType type, String name) {
-        return databaseResolver.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
+        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
                 getParameterMap(name, null), mapper);
     }
 
@@ -138,7 +137,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type,
                                                                String partNameOrDescription) {
-        return databaseResolver.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
+        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
                 GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
                 getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
                 mapper);
@@ -147,7 +146,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName,
                                                                      String text) {
-        return databaseResolver.getEntityListFromTable(
+        return daoHelper.getEntityListFromTable(
                 substituteSqlQueryVariable(type.getSortType(),
                         GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
                 getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
@@ -167,7 +166,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     @Transactional
     public void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
-        databaseResolver.updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
+        daoHelper.updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
         updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
     }
 
@@ -195,12 +194,12 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, Set<Tag> tags) {
         saveTags(tags);
-        databaseResolver.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, certificate);
+        daoHelper.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, certificate);
         saveReferencesBetweenCertificatesAndTags(certificate.getId(), tags);
     }
 
     @Override
     public void delete(GiftCertificate certificate) {
-        databaseResolver.updateTable(DELETE_CERTIFICATE, certificate);
+        daoHelper.updateTable(DELETE_CERTIFICATE, certificate);
     }
 }
