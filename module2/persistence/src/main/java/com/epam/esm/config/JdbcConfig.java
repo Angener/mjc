@@ -1,8 +1,6 @@
 package com.epam.esm.config;
 
 import com.epam.esm.dao.DaoHelper;
-import com.epam.esm.entity.GiftCertificate;
-import com.epam.esm.entity.Tag;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,8 +72,8 @@ public class JdbcConfig {
         return new DataSourceTransactionManager(dataSource);
     }
 
-    public DaoHelper getDaoHelper(JdbcTemplate jdbcTemplate,
-                                                             NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+    @Bean
+    public DaoHelper getDaoHelper(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         return new DaoHelper(namedParameterJdbcTemplate);
     }
 }
