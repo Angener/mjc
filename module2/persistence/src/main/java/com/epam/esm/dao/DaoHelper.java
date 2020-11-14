@@ -35,6 +35,10 @@ public final class DaoHelper {
                 rowMapper);
     }
 
+    void updateTable(String sqlScript, Map<String, Object> info) {
+        namedParameterJdbcTemplate.update(sqlScript, info);
+    }
+
     <T> void updateTable(String sqlScript, T t) {
         namedParameterJdbcTemplate.update(sqlScript, new BeanPropertySqlParameterSource(t));
     }
@@ -47,8 +51,8 @@ public final class DaoHelper {
     }
 
     <T> List<T> getAllEntitiesFromTableReferencedEntity(String sqlScript,
-                                                    GiftCertificate certificate,
-                                                    RowMapper<T> mapper) {
+                                                        GiftCertificate certificate,
+                                                        RowMapper<T> mapper) {
         return namedParameterJdbcTemplate.query(sqlScript, new BeanPropertySqlParameterSource(certificate), mapper);
     }
 
