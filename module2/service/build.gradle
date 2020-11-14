@@ -16,6 +16,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
     testCompile group: 'org.mockito', name: 'mockito-core', version: '3.6.0'
+    testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.6.0'
     testImplementation group: 'org.springframework', name: 'spring-test', version: '5.2.9.RELEASE'
     implementation project(':persistence')
 }
