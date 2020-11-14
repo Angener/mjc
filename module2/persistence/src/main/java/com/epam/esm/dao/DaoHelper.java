@@ -1,8 +1,6 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -14,10 +12,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class DaoHelper {
 
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
     public DaoHelper(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {

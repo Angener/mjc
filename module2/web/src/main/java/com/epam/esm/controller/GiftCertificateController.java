@@ -5,8 +5,6 @@ import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.GiftCertificateService;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -25,10 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GiftCertificateController {
 
-    GiftCertificateService service;
+    private final GiftCertificateService service;
 
     @Autowired
     public GiftCertificateController(GiftCertificateService service) {

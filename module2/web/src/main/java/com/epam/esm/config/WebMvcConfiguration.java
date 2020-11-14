@@ -12,7 +12,7 @@ import java.util.List;
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
-    ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public WebMvcConfiguration(ObjectMapper objectMapper){

@@ -3,19 +3,19 @@ package com.epam.esm.service;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class TagServiceImpl implements TagService {
-    TagDao tagDao;
+    private final TagDao tagDao;
+
+    @Autowired
+    public TagServiceImpl(TagDao tagDao) {
+        this.tagDao = tagDao;
+    }
 
     @Override
     public List<Tag> getAll() {

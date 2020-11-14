@@ -5,9 +5,6 @@ import com.epam.esm.dto.GiftCertificateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -22,11 +19,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GiftCertificateServiceImpl implements GiftCertificateService {
-    GiftCertificateDao giftCertificateDao;
-    TagService tagService;
+    private final GiftCertificateDao giftCertificateDao;
+    private final TagService tagService;
+
+    @Autowired
+    public GiftCertificateServiceImpl(GiftCertificateDao giftCertificateDao, TagService tagService) {
+        this.giftCertificateDao = giftCertificateDao;
+        this.tagService = tagService;
+    }
 
     @Override
     @Transactional
