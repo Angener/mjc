@@ -19,9 +19,12 @@ import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class GiftCertificateTest extends InMemoryDbConfig {
@@ -29,7 +32,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     private GiftCertificateDao dao;
     private GiftCertificate certificate;
     private Set<Tag> tags;
-    private SortCertificatesType type;
+    List<String> sortTypes;
 
     private final Comparator<GiftCertificate> DATE_COMPARATOR = Comparator.comparing(GiftCertificate::getCreateDate);
     private final Comparator<GiftCertificate> NAME_COMPARATOR = Comparator.comparing(GiftCertificate::getName);
@@ -53,14 +56,13 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         when(certificate.getDuration()).thenReturn(3);
         tags = new HashSet<>();
         tags.add(new Tag(1, "first tag"));
-        type = SortCertificatesType.NONE;
+        sortTypes = new ArrayList<>();
     }
 
     @Test
     public void save() {
-        long id = dao.save(certificate, tags);
-        assertEquals(6, id);
-        assertEquals(certificate.getName(), dao.getByName("sixth").getName());
+        GiftCertificate savedCertificate = dao.save(certificate, tags);
+        assertEquals(savedCertificate, dao.getById(6));
         when(certificate.getName()).thenReturn(null);
         assertThrows(DataIntegrityViolationException.class, () -> dao.save(certificate, tags));
         when(certificate.getName()).thenReturn("first");
@@ -95,34 +97,41 @@ public class GiftCertificateTest extends InMemoryDbConfig {
 
     @Test
     public void getByTagName() {
-        assertEquals(1, dao.getByTagName(type,"second tag").size());
-        assertEquals(5, dao.getByTagName(type, "first tag").size());
+        assertEquals(1, dao.getByTagName(sortTypes,"second tag").size());
+        assertEquals(5, dao.getByTagName(sortTypes, "first tag").size());
     }
 
     @Test
     public void searchByTagAndPartNameOrDescription(){
-        assertEquals(4, dao.searchByTagAndPartNameOrDescription(type, "second tag", "th").size());
+        assertEquals(4, dao.searchByTagAndPartNameOrDescription(sortTypes, "second tag", "th").size());
     }
 
     @Test
     public void getByPartNameOrDescriptionTest() {
-        assertEquals(2, dao.searchByPartNameOrDescription(type, "ir").size());
+        assertEquals(2, dao.searchByPartNameOrDescription(sortTypes, "ir").size());
     }
 
     @Test
     public void update() {
-        String[] fields = {"name", "description", "price", "duration"};
+        Map<String, Object> updatableInfo = new HashMap<>();
+        updatableInfo.put("id", 1L);
+        updatableInfo.put("name", "sixth");
+        updatableInfo.put("description", "sixth gift card");
+        updatableInfo.put("price", new BigDecimal("23.30"));
+        updatableInfo.put("duration", 3);
+
         Set<Tag> updatableTag = new HashSet<>();
         updatableTag.add(new Tag(2, "second tag"));
         updatableTag.add(new Tag("third tag"));
         updatableTag.add(new Tag("fourth tag"));
-        when(certificate.getId()).thenReturn(1L);
-        dao.update(certificate, fields, updatableTag);
+
+        dao.update(updatableInfo, updatableTag);
+        updatableInfo.replace("name", "sixth", "second");
         GiftCertificate testableCertificate = dao.getByName("sixth");
 
-        assertEquals(4, dao.getByTagName(type, "first tag").size());
-        assertEquals(1, dao.getByTagName(type, "third tag").size());
-        assertEquals(1, dao.getByTagName(type, "fourth tag").size());
+        assertEquals(4, dao.getByTagName(sortTypes, "first tag").size());
+        assertEquals(1, dao.getByTagName(sortTypes, "third tag").size());
+        assertEquals(1, dao.getByTagName(sortTypes, "fourth tag").size());
         assertEquals(1, testableCertificate.getId());
         assertEquals("sixth", testableCertificate.getName());
         assertEquals("sixth gift card", testableCertificate.getDescription());
@@ -133,43 +142,39 @@ public class GiftCertificateTest extends InMemoryDbConfig {
                 testableCertificate.getCreateDate().format(DateTimeFormatter.ISO_DATE));
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),
                 testableCertificate.getLastUpdateDate().format(DateTimeFormatter.ISO_DATE));
-    }
-
-    @Test
-    public void updateDuplicateKeyException() {
-        String[] fields = {"name"};
-        when(certificate.getId()).thenReturn(5L);
-        when(certificate.getName()).thenReturn("first");
-
         assertThrows(DuplicateKeyException.class,
-                () -> dao.update(certificate, fields, tags));
+                () -> dao.update(updatableInfo, tags));
     }
 
     @Test
     public void delete() {
         when(certificate.getId()).thenReturn(1L);
         dao.delete(certificate);
-        assertEquals(4, dao.getByTagName(type, "first tag").size());
+        assertEquals(4, dao.getByTagName(sortTypes, "first tag").size());
     }
 
     @Test
     public void sortByNameAndDete(){
-        List<GiftCertificate> certificates = dao.getByTagName(type, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        sortTypes.add("create_date");
+        sortTypes.add("name");
         certificates.sort(DATE_COMPARATOR.thenComparing(NAME_COMPARATOR));
-        assertEquals(certificates, dao.getByTagName(SortCertificatesType.DATE_AND_NAME_SORT, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
     }
 
     @Test
     public void sortByName(){
-        List<GiftCertificate> certificates = dao.getByTagName(type, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        sortTypes.add("name");
         certificates.sort(NAME_COMPARATOR);
-        assertEquals(certificates, dao.getByTagName(SortCertificatesType.NAME_SORT, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
     }
 
     @Test
     public void sortByDate(){
-        List<GiftCertificate> certificates = dao.getByTagName(type, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        sortTypes.add("create_date");
         certificates.sort(DATE_COMPARATOR);
-        assertEquals(certificates, dao.getByTagName(SortCertificatesType.DATE_SORT, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
     }
 }

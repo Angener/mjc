@@ -1,11 +1,10 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.GiftCertificateDaoImpl;
-import com.epam.esm.dao.SortCertificatesType;
 import com.epam.esm.dto.GiftCertificateDto;
+import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import com.epam.esm.exception.UpdatingForbiddenFieldsException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,135 +12,167 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.mockito.InOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+@ExtendWith(MockitoExtension.class)
 public class GiftCertificateServiceImplTest {
-    @InjectMocks
-    @Spy
-    GiftCertificateServiceImpl service;
+    static final String TAG_NAME = "tagName";
+    static final String PART_NAME = "partName";
+    static Set<Tag> tags;
+    static List<String> tagNames;
+    static List<GiftCertificate> certificates;
+    static GiftCertificate certificate;
+    Map<String, Object> fields;
+    GiftCertificateDto dto;
     @Mock
     GiftCertificateDaoImpl dao;
     @Mock
-    GiftCertificate certificate;
-    @Mock
-    GiftCertificateDto dto;
-    static Set<Tag> tags;
-    static List<GiftCertificate> certificates;
-    SortCertificatesType type;
+    TagServiceImpl tagService;
+    @InjectMocks
+    GiftCertificateServiceImpl service;
 
     @BeforeAll
     public static void init() {
+        initTags();
+        initTagNames();
+    }
+
+    private static void initTags(){
         tags = new HashSet<>();
         tags.add(new Tag(1, "first"));
         tags.add(new Tag(2, "second"));
-        certificates = Collections.singletonList(new GiftCertificate());
+    }
+
+    private static void initTagNames(){
+        tagNames = tags.stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
     }
 
     @BeforeEach
     public void setUp() {
-        type = SortCertificatesType.NONE;
-        MockitoAnnotations.openMocks(this);
-        dto.setGiftCertificate(certificate);
-        dto.setTags(tags);
+        setCertificate();
+        setFields();
+        setDto();
+        setCertificates();
+    }
+
+    private void setCertificate(){
+        certificate = new GiftCertificate();
+        certificate.setId(1L);
+        certificate.setName("name");
+        certificate.setDescription("description");
+    }
+
+    private void setFields(){
+        fields = new HashMap<>();
+        fields.put("id", certificate.getId());
+    }
+
+    private void setDto(){
+        dto = new GiftCertificateDto(certificate, tags);
+    }
+
+    private void setCertificates(){
+        certificates = Collections.singletonList(certificate);
     }
 
     @Test
     public void save() {
-        when(dao.save(dto.getGiftCertificate(), dto.getTags())).thenReturn(1L);
+        when(dao.save(dto.getGiftCertificate(), dto.getTags())).thenReturn(certificate);
 
-        assertEquals(1, service.save(dto));
+        assertEquals(certificate, service.save(dto));
         verify(dao).save(dto.getGiftCertificate(), dto.getTags());
         verifyNoMoreInteractions(dao);
-        verify(service).save(dto);
-        verifyNoMoreInteractions(service);
     }
 
     @Test
-    public void update() throws UpdatingForbiddenFieldsException {
-        when(dto.getFields()).thenReturn(new String[]{"name"});
-        service.update(dto);
+    public void update() {
+        fields.put("name", certificate.getName());
+        fields.put("description", certificate.getDescription());
 
-        verify(service).update(dto);
-        verify(dao).update(dto.getGiftCertificate(), dto.getFields(), dto.getTags());
-        verifyNoMoreInteractions(service);
+        when(dao.update(anyMap(), anySet())).thenReturn(certificate);
+
+        assertEquals(service.update(dto), certificate);
+        verify(dao).update(fields, tags);
         verifyNoMoreInteractions(dao);
     }
 
     @Test
-    public void updateThrowsUpdatingForbiddenException() {
-        when(dto.getFields()).thenReturn(new String[]{"createDate"});
+    public void updateAllCertificateFields() {
+        certificate.setPrice(new BigDecimal("21"));
+        certificate.setDuration(12);
+        fields.put("name", certificate.getName());
+        fields.put("description", certificate.getDescription());
+        fields.put("price", certificate.getPrice());
+        fields.put("duration", certificate.getDuration());
 
-        assertThrows(UpdatingForbiddenFieldsException.class, () -> service.update(dto));
-        when(dto.getFields()).thenReturn(new String[]{"lastUpdateDate"});
+        when(dao.update(anyMap(), anySet())).thenReturn(certificate);
 
-        assertThrows(UpdatingForbiddenFieldsException.class, () -> service.update(dto));
-        verifyNoInteractions(dao);
+        assertEquals(service.update(dto), certificate);
+        verify(dao).update(fields, tags);
+    }
+
+    @Test
+    public void updateNeverUpdatingDateFields() {
+        certificate.setName(null);
+        certificate.setDescription(null);
+        certificate.setCreateDate(ZonedDateTime.now());
+        certificate.setLastUpdateDate(ZonedDateTime.now());
+        fields.put("createDate", certificate.getCreateDate());
+        fields.put("lastUpdateDate", certificate.getLastUpdateDate());
+
+        when(dao.update(anyMap(), anySet())).thenReturn(certificate);
+
+        service.update(dto);
+
+        verify(dao, times(0)).update(fields, tags);
     }
 
     @Test
     public void searchByTagNameAndPartName() {
-        String tagName = "first";
-        String partName = "th";
-        service.search(tagName, partName, false, false);
-        when(service.getSortType(false, false)).thenReturn(type);
-        InOrder inOrder = inOrder(service, dao);
+        when(dao.searchByTagAndPartNameOrDescription(tagNames, TAG_NAME, PART_NAME)).thenReturn(certificates);
+        when(tagService.getAllGiftCertificateTags(any(GiftCertificate.class))).thenReturn(new ArrayList<>(tags));
 
-        inOrder.verify(service).search(tagName, partName, false, false);
-        inOrder.verify(service).getSortType(false, false);
-        inOrder.verify(service).collectByBothParameters(type, tagName, partName);
-        inOrder.verify(dao).searchByTagAndPartNameOrDescription(type, tagName, partName);
-        inOrder.verify(service, times(0)).collectByTagNameOnly(type, tagName);
-        inOrder.verify(service, times(0)).collectByPartNameOrDescriptionOnly(type, partName);
-        inOrder.verify(service, times(1)).collectCertificates(anyList());
-        inOrder.verify(service).collectAllCertificatesTags(anyList());
-        inOrder.verifyNoMoreInteractions();
+        assertEquals(Collections.singletonList(new GiftCertificateWithTagsDto(certificate, new ArrayList<>(tags))),
+                service.search(TAG_NAME, PART_NAME, tagNames));
+        verify(dao).searchByTagAndPartNameOrDescription(tagNames, TAG_NAME, PART_NAME);
+        verify(tagService).getAllGiftCertificateTags(certificate);
     }
 
     @Test
     public void searchByTagOnly() {
-        String tagName = "first";
-        String partName = "";
-        service.search(tagName, partName, false, false);
-        when(service.getSortType(false, false)).thenReturn(type);
-        InOrder inOrder = inOrder(service, dao);
+        when(dao.getByTagName(tagNames, TAG_NAME)).thenReturn(certificates);
+        when(tagService.getAllGiftCertificateTags(any(GiftCertificate.class))).thenReturn(new ArrayList<>(tags));
 
-        inOrder.verify(service).search(tagName, partName, false, false);
-        inOrder.verify(service).getSortType(false, false);
-        inOrder.verify(service, times(0)).collectByBothParameters(type, tagName, partName);
-        inOrder.verify(service).collectByTagNameOnly(type, tagName);
-        inOrder.verify(dao).getByTagName(type, tagName);
-        inOrder.verify(service, times(0)).collectByPartNameOrDescriptionOnly(type, partName);
-        inOrder.verify(service, times(1)).collectCertificates(anyList());
-        inOrder.verify(service).collectAllCertificatesTags(anyList());
-        inOrder.verifyNoMoreInteractions();
+        assertEquals(Collections.singletonList(new GiftCertificateWithTagsDto(certificate, new ArrayList<>(tags))),
+                service.search(TAG_NAME, null, tagNames));
+        verify(dao).getByTagName(tagNames, TAG_NAME);
+        verify(tagService).getAllGiftCertificateTags(certificate);
     }
 
     @Test
     public void searchByPartNameOnly() {
-        String tagName = "";
-        String partName = "wh";
-        service.search(tagName, partName, false, false);
-        when(service.getSortType(false, false)).thenReturn(type);
-        InOrder inOrder = inOrder(service, dao);
+        when(dao.searchByPartNameOrDescription(tagNames, PART_NAME)).thenReturn(certificates);
+        when(tagService.getAllGiftCertificateTags(any(GiftCertificate.class))).thenReturn(new ArrayList<>(tags));
+        service.search(null, PART_NAME, tagNames);
 
-        inOrder.verify(service).search(tagName, partName, false, false);
-        inOrder.verify(service).getSortType(false, false);
-        inOrder.verify(service, times(0)).collectByBothParameters(type, tagName, partName);
-        inOrder.verify(service, times(0)).collectByTagNameOnly(type, tagName);
-        inOrder.verify(service).collectByPartNameOrDescriptionOnly(type, partName);
-        inOrder.verify(dao).searchByPartNameOrDescription(type, partName);
-        inOrder.verify(service).collectCertificates(anyList());
-        inOrder.verify(service).collectAllCertificatesTags(anyList());
-        inOrder.verifyNoMoreInteractions();
+        verify(dao).searchByPartNameOrDescription(tagNames, PART_NAME);
+        verify(tagService).getAllGiftCertificateTags(certificate);
     }
 
     @Test
@@ -150,9 +181,6 @@ public class GiftCertificateServiceImplTest {
 
         assertEquals(certificates, service.getAll());
         verify(dao).getAll();
-        verify(service).getAll();
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
     }
 
     @Test
@@ -161,9 +189,6 @@ public class GiftCertificateServiceImplTest {
 
         assertEquals(certificates.get(0), service.getById(anyLong()));
         verify(dao).getById(anyLong());
-        verify(service).getById(anyLong());
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
     }
 
     @Test
@@ -172,48 +197,27 @@ public class GiftCertificateServiceImplTest {
 
         assertEquals(certificates.get(0), service.search(anyString()));
         verify(dao).getByName(anyString());
-        verify(service).search(anyString());
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
     }
 
     @Test
     public void getByTagName() {
-        when(dao.getByTagName(any(), anyString())).thenReturn(certificates);
+        when(dao.getByTagName(null, TAG_NAME)).thenReturn(certificates);
 
-        assertEquals(certificates, service.getByTagName(anyString()));
-        verify(dao).getByTagName(any(), anyString());
-        verify(service).getByTagName(anyString());
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
+        assertEquals(certificates, service.getByTagName(TAG_NAME));
+        verify(dao).getByTagName(null, TAG_NAME);
     }
 
     @Test
     public void searchByPartNameOrDescription() {
-        when(dao.searchByPartNameOrDescription(any(), anyString())).thenReturn(certificates);
+        when(dao.searchByPartNameOrDescription(null, PART_NAME)).thenReturn(certificates);
 
-        assertEquals(certificates, service.searchByPartNameOrDescription(anyString()));
-        verify(dao).searchByPartNameOrDescription(any(), anyString());
-        verify(service).searchByPartNameOrDescription(anyString());
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
+        assertEquals(certificates, service.searchByPartNameOrDescription(PART_NAME));
+        verify(dao).searchByPartNameOrDescription(null, PART_NAME);
     }
 
     @Test
     public void delete() {
         service.delete(certificate);
-
         verify(dao).delete(certificate);
-        verify(service).delete(certificate);
-        verifyNoMoreInteractions(service);
-        verifyNoMoreInteractions(dao);
-    }
-
-    @Test
-    public void defineSortType(){
-        assertEquals(SortCertificatesType.DATE_AND_NAME_SORT, service.getSortType(true, true));
-        assertEquals(SortCertificatesType.NAME_SORT, service.getSortType(true, false));
-        assertEquals(SortCertificatesType.DATE_SORT, service.getSortType(false, true));
-        assertEquals(SortCertificatesType.NONE, service.getSortType(false, false));
     }
 }

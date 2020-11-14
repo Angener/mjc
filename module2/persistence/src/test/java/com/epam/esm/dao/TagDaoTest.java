@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import static org.mockito.Mockito.*;
@@ -42,7 +43,7 @@ public class TagDaoTest extends InMemoryDbConfig {
     }
 
     @Test
-    public void getById(){
+    public void getById() {
         assertEquals(1, dao.getById(1).getId());
         assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("ninth tag"));
     }
@@ -57,12 +58,12 @@ public class TagDaoTest extends InMemoryDbConfig {
 
     @Test
     public void save() {
-        long id;
-        id = dao.save(new Tag("third tag"));
+        Tag tag = dao.save(new Tag("third tag"));
 
         assertEquals(3, dao.getAll().size());
-        assertEquals(3, id);
+        assertEquals(tag, dao.getById(3));
         assertThrows(DataIntegrityViolationException.class, () -> dao.save(new Tag()));
+        assertThrows(DuplicateKeyException.class, () -> dao.save(new Tag("third tag")));
     }
 
     @Test
