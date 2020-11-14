@@ -13,7 +13,7 @@ public interface GiftCertificateService {
     List<GiftCertificate> getAll();
 
     List<GiftCertificateWithTagsDto> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
-                                            boolean nameSort, boolean dateSort);
+                                            @Nullable List<String> sortTypes);
 
     GiftCertificate getById(long id);
 

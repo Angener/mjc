@@ -7,7 +7,6 @@ import com.epam.esm.exception.ExceptionDetail;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.GiftCertificateService;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,10 +27,14 @@ import java.util.List;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class GiftCertificateController {
 
     GiftCertificateService service;
+
+    @Autowired
+    public GiftCertificateController(GiftCertificateService service) {
+        this.service = service;
+    }
 
     @PostMapping("/giftCertificates")
     @ResponseStatus(HttpStatus.CREATED)
@@ -76,9 +79,8 @@ public class GiftCertificateController {
     public List<GiftCertificateWithTagsDto>
     get(@RequestParam(required = false, defaultValue = "") String tagName,
         @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
-        @RequestParam(required = false) boolean nameSort,
-        @RequestParam(required = false) boolean dateSort) {
-        return service.search(tagName, partNameOrDesc, nameSort, dateSort);
+        @RequestParam(required = false) List<String> sortTypes) {
+        return service.search(tagName, partNameOrDesc, sortTypes);
     }
 
     @DeleteMapping("/giftCertificates")

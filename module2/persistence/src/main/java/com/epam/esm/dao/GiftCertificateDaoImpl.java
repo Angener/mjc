@@ -14,11 +14,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -67,6 +69,8 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
             rs.getTimestamp("create_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
             rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
             rs.getInt("duration"));
+    static String SORTING_ORDER = " ASC";
+    static List<String> SORTABLE_TABLE_FIELDS = Arrays.asList("name", "create_date");
 
     TagDao tagDao;
     SimpleJdbcInsert simpleJdbcInsert;
@@ -120,9 +124,34 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> getByTagName(SortCertificatesType type, String name) {
-        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(), GET_CERTIFICATES_BY_TAG_NAME),
+    public List<GiftCertificate> getByTagName(List<String> sortTypes, String name) {
+        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(defineSortType(sortTypes),
+                GET_CERTIFICATES_BY_TAG_NAME),
                 getParameterMap(name, null), mapper);
+    }
+
+    private String defineSortType(List<String> sortTypes) {
+        return isSortTypeExists(sortTypes) ? getTableFieldsForSorting(sortTypes) : "";
+    }
+
+    private boolean isSortTypeExists(List<String> sortTypes) {
+        return sortTypes != null && sortTypes.size() > 0;
+    }
+
+    private String getTableFieldsForSorting(List<String> sortTypes) {
+        sortTypes = getSortingParams(sortTypes);
+        return isSortTypeExists(sortTypes) ? produceParams(sortTypes) : "";
+    }
+
+    private List<String> getSortingParams(List<String> sortTypes) {
+        return sortTypes.stream()
+                .filter(SORTABLE_TABLE_FIELDS::contains)
+                .peek(type -> type = type + SORTING_ORDER)
+                .collect(Collectors.toList());
+    }
+
+    private String produceParams(List<String> params) {
+        return "ORDER BY " + String.join(", ", params);
     }
 
     private String substituteSqlQueryVariable(String value, String source) {
@@ -130,19 +159,19 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public List<GiftCertificate> searchByPartNameOrDescription(SortCertificatesType type,
+    public List<GiftCertificate> searchByPartNameOrDescription(List<String> sortTypes,
                                                                String partNameOrDescription) {
-        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(type.getSortType(),
+        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(defineSortType(sortTypes),
                 GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
                 getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
                 mapper);
     }
 
     @Override
-    public List<GiftCertificate> searchByTagAndPartNameOrDescription(SortCertificatesType type, String tagName,
+    public List<GiftCertificate> searchByTagAndPartNameOrDescription(List<String> sortTypes, String tagName,
                                                                      String text) {
         return daoHelper.getEntityListFromTable(
-                substituteSqlQueryVariable(type.getSortType(),
+                substituteSqlQueryVariable(defineSortType(sortTypes),
                         GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
                 getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
     }

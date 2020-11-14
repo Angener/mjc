@@ -1,7 +1,6 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.GiftCertificateDao;
-import com.epam.esm.dao.SortCertificatesType;
 import com.epam.esm.dto.GiftCertificateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
@@ -78,52 +77,40 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificateWithTagsDto> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
-                                                   boolean nameSort, boolean dateSort) {
-        SortCertificatesType type = getSortType(nameSort, dateSort);
-        List<GiftCertificateWithTagsDto> certificates = collectCertificates(collectCertificatesWithTags(type,
+                                                   @Nullable List<String> sortTypes) {
+        List<GiftCertificateWithTagsDto> certificates = collectCertificates(collectCertificatesWithTags(sortTypes,
                 tagName, partOfNameOrDesc));
         collectAllCertificatesTags(certificates);
         return certificates;
     }
 
-    protected SortCertificatesType getSortType(boolean nameSort, boolean dateSort) {
-        return isSortingRequired(nameSort, dateSort) ? defineSortType(nameSort, dateSort) : SortCertificatesType.NONE;
-    }
-
-    private boolean isSortingRequired(boolean nameSort, boolean dateSort) {
-        return nameSort || dateSort;
-    }
-
-    protected SortCertificatesType defineSortType(boolean nameSort, boolean dateSort) {
-        if (nameSort && dateSort) {
-            return SortCertificatesType.DATE_AND_NAME_SORT;
-        } else {
-            return nameSort ? SortCertificatesType.NAME_SORT : SortCertificatesType.DATE_SORT;
-        }
-    }
-
-    private List<GiftCertificate> collectCertificatesWithTags(SortCertificatesType type, String tagName, String partOfName) {
-        return (isSearchParametersPassed(tagName, partOfName)) ? collect(type, tagName, partOfName) : new ArrayList<>();
+    private List<GiftCertificate> collectCertificatesWithTags(List<String> sortTypes,
+                                                              String tagName,
+                                                              String partOfName) {
+        return (isSearchParametersPassed(tagName, partOfName)) ?
+                collect(sortTypes, tagName, partOfName) : new ArrayList<>();
     }
 
     private boolean isSearchParametersPassed(String tagName, String partOfName) {
         return tagName.trim().length() > 0 || partOfName.trim().length() > 0;
     }
 
-    private List<GiftCertificate> collect(SortCertificatesType type, String tagName, String partOfName) {
+    private List<GiftCertificate> collect(List<String> sortTypes, String tagName, String partOfName) {
         return (tagName.trim().length() > 0) ?
-                collectByTagAndPartNameOrDescription(type, tagName, partOfName)
-                : (collectByPartNameOrDescriptionOnly(type, partOfName));
+                collectByTagAndPartNameOrDescription(sortTypes, tagName, partOfName)
+                : (collectByPartNameOrDescriptionOnly(sortTypes, partOfName));
     }
 
     private List<GiftCertificate> collectByTagAndPartNameOrDescription
-            (SortCertificatesType type, String tagName, String partOfName) {
-        return ((partOfName.trim().length() > 0) ? (collectByBothParameters(type, tagName, partOfName)) :
-                (collectByTagNameOnly(type, tagName)));
+            (List<String> sortTypes, String tagName, String partOfName) {
+        return ((partOfName.trim().length() > 0) ? (collectByBothParameters(sortTypes, tagName, partOfName)) :
+                (collectByTagNameOnly(sortTypes, tagName)));
     }
 
-    protected List<GiftCertificate> collectByBothParameters(SortCertificatesType type, String tagName, String partNameOrDescription) {
-        return giftCertificateDao.searchByTagAndPartNameOrDescription(type, tagName, partNameOrDescription);
+    protected List<GiftCertificate> collectByBothParameters(List<String> sortTypes,
+                                                            String tagName,
+                                                            String partNameOrDescription) {
+        return giftCertificateDao.searchByTagAndPartNameOrDescription(sortTypes, tagName, partNameOrDescription);
     }
 
     protected List<GiftCertificateWithTagsDto> collectCertificates(List<GiftCertificate> certificates) {
@@ -132,12 +119,13 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
                 .collect(Collectors.toList());
     }
 
-    protected List<GiftCertificate> collectByTagNameOnly(SortCertificatesType type, String tagName) {
-        return giftCertificateDao.getByTagName(type, tagName);
+    protected List<GiftCertificate> collectByTagNameOnly(List<String> sortTypes, String tagName) {
+        return giftCertificateDao.getByTagName(sortTypes, tagName);
     }
 
-    protected List<GiftCertificate> collectByPartNameOrDescriptionOnly(SortCertificatesType type, String partNameOrDescription) {
-        return giftCertificateDao.searchByPartNameOrDescription(type, partNameOrDescription);
+    protected List<GiftCertificate> collectByPartNameOrDescriptionOnly(List<String> sortTypes,
+                                                                       String partNameOrDescription) {
+        return giftCertificateDao.searchByPartNameOrDescription(sortTypes, partNameOrDescription);
     }
 
     protected void collectAllCertificatesTags(List<GiftCertificateWithTagsDto> certificates) {
@@ -151,12 +139,12 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     public List<GiftCertificate> getByTagName(String tagName) {
-        return giftCertificateDao.getByTagName(SortCertificatesType.NONE, tagName);
+        return giftCertificateDao.getByTagName(null, tagName);
     }
 
     @Override
     public List<GiftCertificate> searchByPartNameOrDescription(String partName) {
-        return giftCertificateDao.searchByPartNameOrDescription(SortCertificatesType.NONE, partName);
+        return giftCertificateDao.searchByPartNameOrDescription(null, partName);
     }
 
     @Override
