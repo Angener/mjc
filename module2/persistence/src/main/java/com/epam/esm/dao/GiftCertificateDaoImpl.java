@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.lang.Nullable;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -85,18 +83,15 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public long save(GiftCertificate certificate, Set<Tag> tags) {
-        long id;
+    public GiftCertificate save(GiftCertificate certificate, Set<Tag> tags) {
         saveTags(tags);
-        id = daoHelper.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate);
-        saveReferencesBetweenCertificatesAndTags(id, tags);
-        return id;
+        GiftCertificate savedCertificate = saveCertificate(certificate);
+        saveReferencesBetweenCertificatesAndTags(savedCertificate.getId(), tags);
+        return savedCertificate;
     }
 
-    private void saveTags(Set<Tag> tags) {
-        tags.stream()
-                .filter(tag -> tag.getId() == 0)
-                .forEach(tag -> tag.setId(tagDao.save(tag)));
+    private GiftCertificate saveCertificate(GiftCertificate certificate) {
+        return getById(daoHelper.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate));
     }
 
     private void saveReferencesBetweenCertificatesAndTags(long certificateId, Set<Tag> tags) {
@@ -165,14 +160,18 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @Transactional
-    public void update(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
-        daoHelper.updateTable(substituteSqlQueryVariable(getUpdatableParameters(fields), UPDATE_CERTIFICATE), certificate);
-        updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(certificate, tags);
+    public GiftCertificate update(Map<String, Object> updatableInfo, Set<Tag> tags) {
+        long id = (long) updatableInfo.get("id");
+        String fields = getUpdatableParameters(updatableInfo.keySet());
+        daoHelper.updateTable(substituteSqlQueryVariable(fields, UPDATE_CERTIFICATE), updatableInfo);
+        updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(id, tags);
+        return getById(id);
     }
 
-    private String getUpdatableParameters(String[] fields) {
+    private String getUpdatableParameters(Set<String> fields) {
         StringBuilder sb = new StringBuilder();
-        Arrays.stream(fields)
+        fields.stream()
+                .filter(field -> !field.equals("id"))
                 .forEach(field -> sb.append(field).append("=").append(":").append(field).append(" "));
         return formatUpdatableParameters(sb);
     }
@@ -181,21 +180,38 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
         return String.join(", ", stringBuilder.toString().split(" "));
     }
 
-    private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(GiftCertificate certificate,
-                                                                              Set<Tag> tags) {
+    private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(long id, Set<Tag> tags) {
         if (isTagsPassedForUpdate(tags)) {
-            updateReferencesBetweenCertificatesAndTags(certificate, tags);
+            updateReferencesBetweenCertificatesAndTags(id, tags);
         }
     }
 
     private boolean isTagsPassedForUpdate(Set<Tag> tags) {
-        return tags.size() > 0;
+        return tags != null && tags.size() > 0;
     }
 
-    private void updateReferencesBetweenCertificatesAndTags(GiftCertificate certificate, Set<Tag> tags) {
+    private void updateReferencesBetweenCertificatesAndTags(long id, Set<Tag> tags) {
         saveTags(tags);
-        daoHelper.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, certificate);
-        saveReferencesBetweenCertificatesAndTags(certificate.getId(), tags);
+        daoHelper.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, Collections.singletonMap("id", id));
+        saveReferencesBetweenCertificatesAndTags(id, tags);
+    }
+
+    private void saveTags(Set<Tag> tags) {
+        List<Tag> registerTags = tagDao.getAll();
+        getRegisterTagIds(tags, registerTags);
+        saveUnregisterTags(tags, registerTags);
+    }
+
+    private void getRegisterTagIds(Set<Tag> tags, List<Tag> registerTags) {
+        tags.stream()
+                .filter(registerTags::contains)
+                .forEach(tag -> tag.setId(registerTags.get(registerTags.indexOf(tag)).getId()));
+    }
+
+    private void saveUnregisterTags(Set<Tag> tags, List<Tag> registerTags) {
+        tags.stream()
+                .filter(tag -> !registerTags.contains(tag))
+                .forEach(tag -> tag.setId(tagDao.save(tag).getId()));
     }
 
     @Override

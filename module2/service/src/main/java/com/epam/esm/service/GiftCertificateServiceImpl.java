@@ -6,7 +6,6 @@ import com.epam.esm.dto.GiftCertificateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import com.epam.esm.exception.UpdatingForbiddenFieldsException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,8 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,7 +31,7 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     @Transactional
-    public long save(GiftCertificateDto dto) {
+    public GiftCertificate save(GiftCertificateDto dto) {
         GiftCertificate certificate = dto.getGiftCertificate();
         Set<Tag> tags = dto.getTags();
         return giftCertificateDao.save(certificate, tags);
@@ -38,25 +39,30 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
 
     @Override
     @Transactional
-    public void update(GiftCertificateDto dto) throws UpdatingForbiddenFieldsException {
-        checkUpdatableFields(dto.getFields());
-        updateGiftCertificate(dto.getGiftCertificate(), dto.getFields(), dto.getTags());
+    public GiftCertificate update(GiftCertificateDto dto) {
+        Map<String, Object> map = putFieldsToMap(dto.getGiftCertificate());
+        clearNullableFields(map);
+        Set<Tag> tags = dto.getTags();
+        return updateGiftCertificate(map, tags);
     }
 
-    private void checkUpdatableFields(String[] fields) throws UpdatingForbiddenFieldsException {
-        if (isUpdatableRequestContainsForbiddenFields(fields)) {
-            throw new UpdatingForbiddenFieldsException();
-        }
+    private Map<String, Object> putFieldsToMap(GiftCertificate certificate) {
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("id", certificate.getId());
+        fields.put("name", certificate.getName());
+        fields.put("description", certificate.getDescription());
+        fields.put("price", certificate.getPrice());
+        fields.put("duration", certificate.getDuration());
+        return fields;
     }
 
-    private boolean isUpdatableRequestContainsForbiddenFields(String[] fields) {
-        return Arrays.stream(fields)
-                .anyMatch(field -> field.trim().equalsIgnoreCase("createdate") ||
-                        field.trim().equalsIgnoreCase("lastupdatedate"));
+    private void clearNullableFields(Map<String, Object> fields) {
+        fields.values().removeIf(Objects::isNull);
+        fields.values().removeIf(field -> field.equals(0));
     }
 
-    private void updateGiftCertificate(GiftCertificate certificate, String[] fields, @Nullable Set<Tag> tags) {
-        giftCertificateDao.update(certificate, fields, tags);
+    private GiftCertificate updateGiftCertificate(Map<String, Object> fields, Set<Tag> tags) {
+        return giftCertificateDao.update(fields, tags);
     }
 
     @Override

@@ -6,10 +6,15 @@ import com.epam.esm.entity.Tag;
 import java.util.List;
 
 public interface TagDao {
-     List<Tag> getAll ();
-     Tag getByName(String name);
-     Tag getById(long id);
-     List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
-     long save(Tag tag);
-     void delete(Tag tag);
+    List<Tag> getAll();
+
+    Tag getByName(String name);
+
+    Tag getById(long id);
+
+    List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
+
+    Tag save(Tag tag);
+
+    void delete(Tag tag);
 }

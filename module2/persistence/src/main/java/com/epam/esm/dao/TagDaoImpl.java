@@ -6,9 +6,9 @@ import com.epam.esm.entity.Tag;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class TagDaoImpl implements TagDao {
                     "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
                     "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
                     "WHERE gift_certificate.id = :id;";
-    static String SAVE_TAG = "INSERT INTO tag (name) VALUES (:name) ON CONFLICT DO NOTHING;";
+    static String SAVE_TAG = "INSERT INTO tag (name) VALUES (:name);";
     static String DELETE_TAG = "DELETE FROM tag WHERE id = :id;";
     static RowMapper<Tag> mapper = (rs, mapRow) -> new Tag(rs.getLong("id"),
             rs.getString("name"));
@@ -55,8 +55,9 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public long save(Tag tag) {
-        return daoHelper.updateTableWithIdReturn(SAVE_TAG, tag);
+    @Transactional
+    public Tag save(Tag tag) {
+        return getById(daoHelper.updateTableWithIdReturn(SAVE_TAG, tag));
     }
 
     @Override

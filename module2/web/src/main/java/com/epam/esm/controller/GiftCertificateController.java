@@ -1,12 +1,11 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.dto.GiftCertificateDto;
+import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.ExceptionDetail;
 import com.epam.esm.exception.LocalizedControllerException;
-import com.epam.esm.exception.UpdatingForbiddenFieldsException;
 import com.epam.esm.service.GiftCertificateService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
+import java.util.List;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -33,11 +32,10 @@ import java.io.IOException;
 public class GiftCertificateController {
 
     GiftCertificateService service;
-    ObjectMapper mapper;
 
     @PostMapping("/giftCertificates")
     @ResponseStatus(HttpStatus.CREATED)
-    public long save(@RequestBody GiftCertificateDto dto) {
+    public GiftCertificate save(@RequestBody GiftCertificateDto dto) {
         try {
             return service.save(dto);
         } catch (DuplicateKeyException ex) {
@@ -48,40 +46,39 @@ public class GiftCertificateController {
     }
 
     @PatchMapping("/giftCertificates")
-    public void update(@RequestBody GiftCertificateDto dto) {
+    public GiftCertificate update(@RequestBody GiftCertificateDto dto) {
         try {
-            service.update(dto);
-        } catch (UpdatingForbiddenFieldsException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.UPDATING_FORBIDDEN_DATE_FIELDS);
+            return service.update(dto);
         } catch (DuplicateKeyException ex) {
             throw new LocalizedControllerException(ExceptionDetail.NAME_IS_NOT_UNIQUE);
         }
     }
 
     @GetMapping("/giftCertificates")
-    public String getAll() throws IOException {
+    public List<GiftCertificate> getAll() {
         try {
-            return mapper.writeValueAsString(service.getAll());
+            return service.getAll();
         } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
         }
     }
 
     @GetMapping("/giftCertificates/{id}")
-    public String getById(@PathVariable long id) throws IOException {
+    public GiftCertificate getById(@PathVariable long id) {
         try {
-            return mapper.writeValueAsString(service.getById(id));
+            return service.getById(id);
         } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
         }
     }
 
     @GetMapping("/giftCertificates/search")
-    public String get(@RequestParam(required = false, defaultValue = "") String tagName,
-                      @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
-                      @RequestParam(required = false) boolean nameSort,
-                      @RequestParam(required = false) boolean dateSort) throws IOException {
-        return mapper.writeValueAsString(service.search(tagName, partNameOrDesc, nameSort, dateSort));
+    public List<GiftCertificateWithTagsDto>
+    get(@RequestParam(required = false, defaultValue = "") String tagName,
+        @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
+        @RequestParam(required = false) boolean nameSort,
+        @RequestParam(required = false) boolean dateSort) {
+        return service.search(tagName, partNameOrDesc, nameSort, dateSort);
     }
 
     @DeleteMapping("/giftCertificates")
