@@ -14,6 +14,5 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificateDto {
     GiftCertificate giftCertificate;
-    String[] fields;
     Set<Tag> tags;
 }
