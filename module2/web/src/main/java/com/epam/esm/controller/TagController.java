@@ -1,12 +1,8 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.entity.Tag;
-import com.epam.esm.exception.ExceptionDetail;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.TagService;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -23,17 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class TagController {
-    TagService service;
+    private final TagService service;
+
+    @Autowired
+    public TagController(TagService service) {
+        this.service = service;
+    }
 
     @GetMapping(value = "/tags")
     public List<Tag> getAll() {
         try {
             return service.getAll();
         } catch (EmptyResultDataAccessException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND);
+            throw new LocalizedControllerException("exception.message.40401", 40401, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -42,7 +41,7 @@ public class TagController {
         try {
             return service.getById(id);
         } catch (EmptyResultDataAccessException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.TAG_NOT_FOUND);
+            throw new LocalizedControllerException("exception.message.40401", 40401, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -51,10 +50,10 @@ public class TagController {
     public Tag save(@RequestBody Tag tag) {
         try {
             return service.save(tag);
-        } catch (DuplicateKeyException ex){
-            throw new LocalizedControllerException(ExceptionDetail.NAME_IS_NOT_UNIQUE);
+        } catch (DuplicateKeyException ex) {
+            throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.TAG_DOES_NOT_CONTAIN_NAME);
+            throw new LocalizedControllerException("exception.message.40001", 40001, HttpStatus.BAD_REQUEST);
         }
     }
 

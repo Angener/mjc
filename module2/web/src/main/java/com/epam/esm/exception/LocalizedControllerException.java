@@ -1,15 +1,19 @@
 package com.epam.esm.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
+@Getter
 public class LocalizedControllerException extends RuntimeException {
     private static final long serialVersionUID = 1L;
-    @Getter
-    private ExceptionDetail exceptionDetail;
 
-    public LocalizedControllerException(ExceptionDetail exceptionDetails) {
-        super(exceptionDetails.getMessage());
-        this.exceptionDetail = exceptionDetails;
+    private int errorCode;
+    private HttpStatus status;
+
+    public LocalizedControllerException(String message, int errorCode, HttpStatus status) {
+        super(message);
+        this.errorCode = errorCode;
+        this.status = status;
     }
 
     public LocalizedControllerException(String message) {

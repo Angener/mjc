@@ -3,7 +3,6 @@ package com.epam.esm.controller;
 import com.epam.esm.dto.GiftCertificateDto;
 import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
-import com.epam.esm.exception.ExceptionDetail;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.GiftCertificateService;
 import lombok.AccessLevel;
@@ -42,9 +41,9 @@ public class GiftCertificateController {
         try {
             return service.save(dto);
         } catch (DuplicateKeyException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.NAME_IS_NOT_UNIQUE);
+            throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.CERTIFICATE_TAGS_IS_NOT_AVAILABLE);
+            throw new LocalizedControllerException("exception.message.40003", 40003, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -53,7 +52,7 @@ public class GiftCertificateController {
         try {
             return service.update(dto);
         } catch (DuplicateKeyException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.NAME_IS_NOT_UNIQUE);
+            throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -62,7 +61,7 @@ public class GiftCertificateController {
         try {
             return service.getAll();
         } catch (EmptyResultDataAccessException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
+            throw new LocalizedControllerException("exception.message.40402", 40402, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -71,7 +70,7 @@ public class GiftCertificateController {
         try {
             return service.getById(id);
         } catch (EmptyResultDataAccessException ex) {
-            throw new LocalizedControllerException(ExceptionDetail.GIFT_CERTIFICATE_NOT_FOUND);
+            throw new LocalizedControllerException("exception.message.40402", 40402, HttpStatus.NOT_FOUND);
         }
     }
 
