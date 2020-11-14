@@ -1,5 +1,6 @@
 package com.epam.esm.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
@@ -9,10 +10,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+
 @Configuration
 @Import(ServiceConfig.class)
 @EnableWebMvc
-@ComponentScan(basePackages = {"com.epam.esm.controller"})
+@ComponentScan(basePackages = {"com.epam.esm"})
 public class SpringConfig {
 
     @Bean
@@ -27,6 +29,7 @@ public class SpringConfig {
     public ObjectMapper getObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
+        mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;
     }
