@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    testCompileOnly 'org.projectlombok:lombok:1.18.16'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
+    compile 'org.springframework:spring-context:5.2.9.RELEASE'
+    testImplementation 'org.springframework:spring-test:5.2.9.RELEASE'
+    compile 'com.google.guava:guava:30.0-jre'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompile 'org.mockito:mockito-core:3.6.0'
+    testCompile 'org.mockito:mockito-junit-jupiter:3.6.0'
+    implementation project(':persistence')
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'default'
+}
