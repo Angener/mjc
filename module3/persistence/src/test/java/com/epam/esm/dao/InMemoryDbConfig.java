@@ -26,6 +26,9 @@ public class InMemoryDbConfig {
             "create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
             "last_update_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
             "duration INTEGER NOT NULL DEFAULT 1);";
+    private static final String CREATE_USER_TABLE = "CREATE TABLE IF NOT EXISTS \"user\" (" +
+            "id BIGSERIAL PRIMARY KEY NOT NULL, " +
+            "name CHARACTER VARYING(255) UNIQUE NOT NULL);";
     private static final String CREATE_TAG_GIFT_CERTIFICATE_TABLE = "CREATE TABLE IF NOT EXISTS tag_gift_certificate (" +
             "tag_id BIGINT, " +
             "gift_certificate_id BIGINT, " +
@@ -45,9 +48,13 @@ public class InMemoryDbConfig {
             "('fifth', 'fifth gift card', 3.2, 22);";
     private static final String FILL_TAG_GIFT_CERTIFICATE_TABLE = "INSERT INTO tag_gift_certificate " +
             "(tag_id, gift_certificate_id) VALUES (1, 1), (2, 1), (1, 2), (1, 3), (1, 4), (1, 5);";
+    private static final String FILL_USER_TABLE = "INSERT INTO \"user\" (name) VALUES " +
+            "('user1'), " +
+            "('user2');";
     private static final String DROP_TAG_TABLE = "DROP TABLE tag;";
     private static final String DROP_GIFT_CERTIFICATE_TABLE = "DROP TABLE gift_certificate;";
     private static final String DROP_TAG_GIFT_CERTIFICATE_TABLE = "DROP TABLE tag_gift_certificate;";
+    private static final String DROP_USER_TABLE = "DROP TABLE \"user\"";
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -60,10 +67,12 @@ public class InMemoryDbConfig {
         return String.join(" ",
                 CREATE_TAG_TABLE,
                 CREATE_GIFT_CERTIFICATE_TABLE,
+                CREATE_USER_TABLE,
                 CREATE_TAG_GIFT_CERTIFICATE_TABLE,
                 FILL_TAG_TABLE,
                 FILL_GIFT_CERTIFICATE_TABLE,
-                FILL_TAG_GIFT_CERTIFICATE_TABLE);
+                FILL_TAG_GIFT_CERTIFICATE_TABLE,
+                FILL_USER_TABLE);
     }
 
     void destroy() {
@@ -74,6 +83,7 @@ public class InMemoryDbConfig {
         return String.join(" ",
                 DROP_TAG_GIFT_CERTIFICATE_TABLE,
                 DROP_TAG_TABLE,
-                DROP_GIFT_CERTIFICATE_TABLE);
+                DROP_GIFT_CERTIFICATE_TABLE,
+                DROP_USER_TABLE);
     }
 }
