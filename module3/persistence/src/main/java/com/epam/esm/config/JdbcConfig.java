@@ -1,8 +1,6 @@
 package com.epam.esm.config;
 
 import com.epam.esm.dao.DaoHelper;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,29 +9,55 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 @Configuration
 @PropertySource("classpath:${spring.profiles.active}.properties")
 @ComponentScan(basePackages = {"com.epam.esm.dao"})
-@EnableTransactionManagement
 public class JdbcConfig {
 
     @Value("${postgres.driverClass}")
     private String driverClass;
     @Value("${postgres.url}")
     private String databaseUrl;
-    @Value("${postgres.databaseName}")
-    private String databaseName;
     @Value("${postgres.username}")
     private String username;
     @Value("${postgres.password}")
     private String password;
-    @Value("${postgres.maxPoolSize}")
-    private int maxPoolSize;
+
+    @Bean
+    public DataSource dataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(driverClass);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        dataSource.setUrl(databaseUrl);
+        return dataSource;
+    }
+
+    @Bean
+    public EntityManagerFactory entityManagerFactory() {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setShowSql(true);
+        vendorAdapter.setGenerateDdl(true);
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        factory.setJpaVendorAdapter(vendorAdapter);
+        factory.setPackagesToScan("com.epam.esm.entity");
+        factory.setDataSource(dataSource());
+        factory.afterPropertiesSet();
+        return factory.getObject();
+    }
+
+    @Bean
+    public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
+        return entityManagerFactory.createEntityManager();
+    }
 
     @Bean
     public JdbcTemplate getJdbcTemplate(DataSource dataSource) {
@@ -48,28 +72,6 @@ public class JdbcConfig {
     @Bean
     public SimpleJdbcInsert getTagGiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_gift_certificate");
-    }
-
-    @Bean
-    public DataSource getDataSource(HikariConfig config) {
-        return new HikariDataSource(config);
-    }
-
-    @Bean
-    public HikariConfig getHikariConfig() {
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName(driverClass);
-        config.setJdbcUrl(databaseUrl);
-        config.setPoolName(databaseName);
-        config.setUsername(username);
-        config.setPassword(password);
-        config.setMaximumPoolSize(maxPoolSize);
-        return config;
-    }
-
-    @Bean
-    public DataSourceTransactionManager getDataSourceTransactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean

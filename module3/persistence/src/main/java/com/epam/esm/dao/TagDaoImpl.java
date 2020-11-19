@@ -10,43 +10,48 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 @Repository
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TagDaoImpl implements TagDao {
-    static String GET_ALL_TAGS = "SELECT * FROM tag;";
-    static String GET_TAG_BY_ID = "SELECT * FROM tag WHERE id = :param;";
-    static String GET_TAG_BY_NAME = "SELECT * FROM tag WHERE name = :param;";
     static String GET_ALL_CERTIFICATE_TAGS =
             "SELECT tag.id, tag.name FROM tag " +
                     "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
                     "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
                     "WHERE gift_certificate.id = :id;";
-    static String SAVE_TAG = "INSERT INTO tag (name) VALUES (:name);";
-    static String DELETE_TAG = "DELETE FROM tag WHERE id = :id;";
     static RowMapper<Tag> mapper = (rs, mapRow) -> new Tag(rs.getLong("id"),
             rs.getString("name"));
     DaoHelper daoHelper;
+    EntityManager entityManager;
 
     @Autowired
-    public TagDaoImpl(DaoHelper daoHelper) {
+    public TagDaoImpl(DaoHelper daoHelper, EntityManager entityManager) {
         this.daoHelper = daoHelper;
+        this.entityManager=entityManager;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Tag> getAll() {
-        return daoHelper.getAllEntityFromTable(GET_ALL_TAGS, mapper);
+        return (List<Tag>) entityManager.createQuery("from Tag").getResultList();
     }
 
     @Override
     public Tag getById(long id) {
-        return daoHelper.getEntityFromTable(GET_TAG_BY_ID, id, mapper);
+        Tag tag = entityManager.find(Tag.class, id);
+        entityManager.detach(tag);
+        return tag;
     }
 
     @Override
     public Tag getByName(String name) {
-        return daoHelper.getEntityFromTable(GET_TAG_BY_NAME, name, mapper);
+        Tag tag = (Tag) entityManager.createQuery("FROM Tag t WHERE t.name = :name")
+                .setParameter("name", name)
+                .getSingleResult();
+        entityManager.detach(tag);
+        return tag;
     }
 
     @Override
@@ -57,11 +62,16 @@ public class TagDaoImpl implements TagDao {
     @Override
     @Transactional
     public Tag save(Tag tag) {
-        return getById(daoHelper.updateTableWithIdReturn(SAVE_TAG, tag));
+        entityManager.getTransaction().begin();
+        entityManager.persist(tag);
+        entityManager.getTransaction().commit();
+        return tag;
     }
 
     @Override
     public void delete(Tag tag) {
-        daoHelper.updateTable(DELETE_TAG, tag);
+        entityManager.getTransaction().begin();
+        entityManager.remove(entityManager.find(Tag.class, tag.getId()));
+        entityManager.getTransaction().commit();
     }
 }

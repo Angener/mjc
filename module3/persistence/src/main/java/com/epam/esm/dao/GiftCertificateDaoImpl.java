@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,14 +76,17 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     TagDao tagDao;
     SimpleJdbcInsert simpleJdbcInsert;
     DaoHelper daoHelper;
+    EntityManager entityManager;
 
     @Autowired
     public GiftCertificateDaoImpl(SimpleJdbcInsert simpleJdbcInsert,
                                   TagDao tagDao,
-                                  DaoHelper daoHelper) {
+                                  DaoHelper daoHelper,
+                                  EntityManager entityManager) {
         this.tagDao = tagDao;
         this.simpleJdbcInsert = simpleJdbcInsert;
         this.daoHelper = daoHelper;
+        this.entityManager = entityManager;
     }
 
     @Override
