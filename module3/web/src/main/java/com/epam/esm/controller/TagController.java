@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.PersistenceException;
 import java.util.List;
 
 @RestController
@@ -50,7 +51,7 @@ public class TagController {
     public Tag save(@RequestBody Tag tag) {
         try {
             return service.save(tag);
-        } catch (DuplicateKeyException ex) {
+        } catch (PersistenceException ex) {
             throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException ex) {
             throw new LocalizedControllerException("exception.message.40001", 40001, HttpStatus.BAD_REQUEST);

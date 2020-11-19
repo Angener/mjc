@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.util.List;
 
 @Repository
@@ -24,33 +25,40 @@ public class TagDaoImpl implements TagDao {
     static RowMapper<Tag> mapper = (rs, mapRow) -> new Tag(rs.getLong("id"),
             rs.getString("name"));
     DaoHelper daoHelper;
-    EntityManager entityManager;
+    EntityManagerFactory emf;
 
     @Autowired
-    public TagDaoImpl(DaoHelper daoHelper, EntityManager entityManager) {
+    public TagDaoImpl(DaoHelper daoHelper, EntityManagerFactory emf) {
         this.daoHelper = daoHelper;
-        this.entityManager=entityManager;
+        this.emf=emf;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<Tag> getAll() {
-        return (List<Tag>) entityManager.createQuery("from Tag").getResultList();
+        EntityManager em = emf.createEntityManager();
+        List<Tag> list = (List<Tag>) em.createQuery("from Tag").getResultList();
+        em.close();
+        return list;
     }
 
     @Override
     public Tag getById(long id) {
-        Tag tag = entityManager.find(Tag.class, id);
-        entityManager.detach(tag);
+        EntityManager em = emf.createEntityManager();
+        Tag tag = em.find(Tag.class, id);
+        em.detach(tag);
+        em.close();
         return tag;
     }
 
     @Override
     public Tag getByName(String name) {
-        Tag tag = (Tag) entityManager.createQuery("FROM Tag t WHERE t.name = :name")
+        EntityManager em = emf.createEntityManager();
+        Tag tag = (Tag) em.createQuery("FROM Tag t WHERE t.name = :name")
                 .setParameter("name", name)
                 .getSingleResult();
-        entityManager.detach(tag);
+        em.detach(tag);
+        em.close();
         return tag;
     }
 
@@ -62,16 +70,20 @@ public class TagDaoImpl implements TagDao {
     @Override
     @Transactional
     public Tag save(Tag tag) {
-        entityManager.getTransaction().begin();
-        entityManager.persist(tag);
-        entityManager.getTransaction().commit();
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        em.persist(tag);
+        em.getTransaction().commit();
+        em.close();
         return tag;
     }
 
     @Override
     public void delete(Tag tag) {
-        entityManager.getTransaction().begin();
-        entityManager.remove(entityManager.find(Tag.class, tag.getId()));
-        entityManager.getTransaction().commit();
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        em.remove(em.find(Tag.class, tag.getId()));
+        em.getTransaction().commit();
+        em.close();
     }
 }

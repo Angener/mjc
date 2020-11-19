@@ -65,7 +65,7 @@ public class TagDaoTest extends InMemoryDbConfig {
         assertEquals(3, dao.getAll().size());
         assertEquals(tag, dao.getById(3));
         assertThrows(PersistenceException.class, () -> dao.save(new Tag()));
-        assertThrows(IllegalStateException.class, () -> dao.save(new Tag("third tag")));
+        assertThrows(PersistenceException.class, () -> dao.save(new Tag("third tag")));
     }
 
     @Test
