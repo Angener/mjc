@@ -1,6 +1,7 @@
 package com.epam.esm.config;
 
 import com.epam.esm.dao.DaoHelper;
+import org.hibernate.dialect.PostgreSQL10Dialect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,8 +11,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.Database;
+import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,6 +27,7 @@ import javax.sql.DataSource;
 @Configuration
 @PropertySource("classpath:${spring.profiles.active}.properties")
 @ComponentScan(basePackages = {"com.epam.esm.dao"})
+@EnableTransactionManagement
 public class JdbcConfig {
 
     @Value("${postgres.driverClass}")
@@ -43,15 +51,30 @@ public class JdbcConfig {
 
     @Bean
     public EntityManagerFactory entityManagerFactory() {
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setShowSql(true);
-        vendorAdapter.setGenerateDdl(true);
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-        factory.setJpaVendorAdapter(vendorAdapter);
-        factory.setPackagesToScan("com.epam.esm.entity");
+        factory.setJpaVendorAdapter(jpaVendorAdapter());
         factory.setDataSource(dataSource());
+        factory.setJpaDialect(new HibernateJpaDialect());
+        factory.setPackagesToScan("com.epam.esm.entity");
         factory.afterPropertiesSet();
         return factory.getObject();
+    }
+
+
+    private JpaVendorAdapter jpaVendorAdapter() {
+        HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
+        jpaVendorAdapter.setShowSql(true);
+        jpaVendorAdapter.setDatabase(Database.POSTGRESQL);
+        jpaVendorAdapter.setDatabasePlatform(PostgreSQL10Dialect.class.getName());
+        jpaVendorAdapter.setGenerateDdl(false);
+        return jpaVendorAdapter;
+    }
+
+    @Bean
+    public PlatformTransactionManager platformTransactionManager(EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
+        jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
+        return jpaTransactionManager;
     }
 
     @Bean

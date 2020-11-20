@@ -1,7 +1,6 @@
 package com.epam.esm.entity;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +17,6 @@ import java.time.ZonedDateTime;
 @Entity
 @Table(name = "gift_certificate")
 @NoArgsConstructor
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificate {
     @Id
@@ -30,4 +28,15 @@ public class GiftCertificate {
     ZonedDateTime createDate;
     ZonedDateTime lastUpdateDate;
     int duration;
+
+    public GiftCertificate(long id, String name, String description, BigDecimal price,
+                           ZonedDateTime createDate, ZonedDateTime lastUpdateDate, int duration) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.createDate = createDate;
+        this.lastUpdateDate = lastUpdateDate;
+        this.duration = duration;
+    }
 }

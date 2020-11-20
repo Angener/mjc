@@ -1,7 +1,6 @@
 package com.epam.esm.entity;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -13,10 +12,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table (name = "tag")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -25,4 +25,9 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude long id;
     @NonNull String name;
+
+    public Tag(long id, @NonNull String name) {
+        this.id = id;
+        this.name = name;
+    }
 }
