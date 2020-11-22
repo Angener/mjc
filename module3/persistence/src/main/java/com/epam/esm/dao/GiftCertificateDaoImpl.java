@@ -6,15 +6,13 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.time.ZoneId;
+import javax.persistence.PersistenceContext;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,209 +22,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificateDaoImpl implements GiftCertificateDao {
-    static String SAVE_CERTIFICATE =
-            "INSERT INTO gift_certificate (name, description, price, duration) " +
-                    "VALUES (:name, :description, :price, :duration);";
-    static String GET_ALL_CERTIFICATES = "SELECT * FROM gift_certificate;";
-    static String GET_CERTIFICATE_BY_ID = "SELECT * FROM gift_certificate WHERE id = :param;";
-    static String GET_CERTIFICATE_BY_NAME = "SELECT * FROM gift_certificate WHERE name = :param;";
-    static String GET_CERTIFICATES_BY_TAG_NAME =
-            "SELECT gc.id, gc.name, gc.description, gc.price, " +
-                    "gc.create_date, gc.last_update_date, gc.duration " +
-                    "FROM gift_certificate gc " +
-                    "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
-                    "JOIN tag ON tag.id = tgc.tag_id " +
-                    "WHERE tag.name= :param " +
-                    "${value};";
-    static String GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION =
-            "SELECT * FROM gift_certificate gc WHERE name LIKE :param " +
-                    "OR description LIKE :param " +
-                    "${value};";
-    static String GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION =
-            "SELECT gc.id, gc.name, gc.description, gc.price, " +
-                    "gc.create_date, gc.last_update_date, gc.duration " +
-                    "FROM gift_certificate gc " +
-                    "JOIN tag_gift_certificate tgc ON gc.id = tgc.gift_certificate_id " +
-                    "JOIN tag ON tag.id = tgc.tag_id " +
-                    "WHERE tag.name= :param " +
-                    "OR gc.name LIKE :text " +
-                    "OR gc.description LIKE :text " +
-                    "${value}";
-    static String UPDATE_CERTIFICATE =
-            "UPDATE gift_certificate " +
-                    "SET ${value}, " +
-                    "last_update_date = CURRENT_TIMESTAMP " +
-                    "WHERE id = :id;";
-    static String DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS = "DELETE FROM tag_gift_certificate " +
-            "WHERE gift_certificate_id= :id;";
-    static String DELETE_CERTIFICATE = "DELETE FROM gift_certificate WHERE id = :id;";
-    static RowMapper<GiftCertificate> mapper = (rs, rowNum) -> new GiftCertificate(
-            rs.getLong("id"),
-            rs.getString("name"),
-            rs.getString("description"),
-            rs.getBigDecimal("price"),
-            rs.getTimestamp("create_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
-            rs.getTimestamp("last_update_date").toLocalDateTime().atZone(ZoneId.of("GMT+3")),
-            rs.getInt("duration"));
-    static String SORTING_ORDER = " ASC";
-    static List<String> SORTABLE_TABLE_FIELDS = Arrays.asList("name", "create_date");
+    static final String SORTING_ORDER = " ASC";
+    static List<String> SORTABLE_TABLE_FIELDS = Arrays.asList("name", "createDate");
 
-    TagDao tagDao;
-    SimpleJdbcInsert simpleJdbcInsert;
-    DaoHelper daoHelper;
+    final TagDao tagDao;
+    @PersistenceContext
     EntityManager entityManager;
 
     @Autowired
-    public GiftCertificateDaoImpl(SimpleJdbcInsert simpleJdbcInsert,
-                                  TagDao tagDao,
-                                  DaoHelper daoHelper,
-                                  EntityManager entityManager) {
+    public GiftCertificateDaoImpl(TagDao tagDao) {
         this.tagDao = tagDao;
-        this.simpleJdbcInsert = simpleJdbcInsert;
-        this.daoHelper = daoHelper;
-        this.entityManager = entityManager;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public GiftCertificate save(GiftCertificate certificate, Set<Tag> tags) {
-        saveTags(tags);
-        GiftCertificate savedCertificate = saveCertificate(certificate);
-        saveReferencesBetweenCertificatesAndTags(savedCertificate.getId(), tags);
-        return savedCertificate;
-    }
-
-    private GiftCertificate saveCertificate(GiftCertificate certificate) {
-        return getById(daoHelper.updateTableWithIdReturn(SAVE_CERTIFICATE, certificate));
-    }
-
-    private void saveReferencesBetweenCertificatesAndTags(long certificateId, Set<Tag> tags) {
-        tags.forEach(
-                tag -> {
-                    Map<String, Object> parameter = new HashMap<>();
-                    parameter.put("tag_id", tag.getId());
-                    parameter.put("gift_certificate_id", certificateId);
-                    simpleJdbcInsert.execute(parameter);
-                });
-    }
-
-    @Override
-    public List<GiftCertificate> getAll() {
-        return daoHelper.getAllEntityFromTable(GET_ALL_CERTIFICATES, mapper);
-    }
-
-    @Override
-    public GiftCertificate getById(long id) {
-        return daoHelper.getEntityFromTable(GET_CERTIFICATE_BY_ID, id, mapper);
-    }
-
-    @Override
-    public GiftCertificate getByName(String name) {
-        return daoHelper.getEntityFromTable(GET_CERTIFICATE_BY_NAME, name, mapper);
-    }
-
-    @Override
-    public List<GiftCertificate> getByTagName(List<String> sortTypes, String name) {
-        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(defineSortType(sortTypes),
-                GET_CERTIFICATES_BY_TAG_NAME),
-                getParameterMap(name, null), mapper);
-    }
-
-    private String defineSortType(List<String> sortTypes) {
-        return isSortTypeExists(sortTypes) ? getTableFieldsForSorting(sortTypes) : "";
-    }
-
-    private boolean isSortTypeExists(List<String> sortTypes) {
-        return sortTypes != null && sortTypes.size() > 0;
-    }
-
-    private String getTableFieldsForSorting(List<String> sortTypes) {
-        sortTypes = getSortingParams(sortTypes);
-        return isSortTypeExists(sortTypes) ? produceParams(sortTypes) : "";
-    }
-
-    private List<String> getSortingParams(List<String> sortTypes) {
-        return sortTypes.stream()
-                .filter(SORTABLE_TABLE_FIELDS::contains)
-                .peek(type -> type = type + SORTING_ORDER)
-                .collect(Collectors.toList());
-    }
-
-    private String produceParams(List<String> params) {
-        return "ORDER BY " + String.join(", ", params);
-    }
-
-    private String substituteSqlQueryVariable(String value, String source) {
-        return new StringSubstitutor(Collections.singletonMap("value", value)).replace(source);
-    }
-
-    @Override
-    public List<GiftCertificate> searchByPartNameOrDescription(List<String> sortTypes,
-                                                               String partNameOrDescription) {
-        return daoHelper.getEntityListFromTable(substituteSqlQueryVariable(defineSortType(sortTypes),
-                GET_CERTIFICATES_BY_PART_NAME_OR_DESCRIPTION),
-                getParameterMap(prepareParameterForInsertingToSqlScript(partNameOrDescription), null),
-                mapper);
-    }
-
-    @Override
-    public List<GiftCertificate> searchByTagAndPartNameOrDescription(List<String> sortTypes, String tagName,
-                                                                     String text) {
-        return daoHelper.getEntityListFromTable(
-                substituteSqlQueryVariable(defineSortType(sortTypes),
-                        GET_CERTIFICATE_BY_TAG_NAME_AND_PART_OF_NAME_OR_DESCRIPTION),
-                getParameterMap(tagName, prepareParameterForInsertingToSqlScript(text)), mapper);
-    }
-
-    private Map<String, String> getParameterMap(String param, @Nullable String text) {
-        Map<String, String> parameters = new HashMap<>();
-        parameters.put("param", param);
-        parameters.put("text", text);
-        return parameters;
-    }
-
-    private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
-        return "%" + partNameOrDescription + "%";
-    }
-
-    @Override
-    @Transactional
-    public GiftCertificate update(Map<String, Object> updatableInfo, Set<Tag> tags) {
-        long id = (long) updatableInfo.get("id");
-        String fields = getUpdatableParameters(updatableInfo.keySet());
-        daoHelper.updateTable(substituteSqlQueryVariable(fields, UPDATE_CERTIFICATE), updatableInfo);
-        updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(id, tags);
-        return getById(id);
-    }
-
-    private String getUpdatableParameters(Set<String> fields) {
-        StringBuilder sb = new StringBuilder();
-        fields.stream()
-                .filter(field -> !field.equals("id"))
-                .forEach(field -> sb.append(field).append("=").append(":").append(field).append(" "));
-        return formatUpdatableParameters(sb);
-    }
-
-    private String formatUpdatableParameters(StringBuilder stringBuilder) {
-        return String.join(", ", stringBuilder.toString().split(" "));
-    }
-
-    private void updateReferencesBetweenCertificatesAndTagsIfTagsWasPassForIt(long id, Set<Tag> tags) {
-        if (isTagsPassedForUpdate(tags)) {
-            updateReferencesBetweenCertificatesAndTags(id, tags);
-        }
-    }
-
-    private boolean isTagsPassedForUpdate(Set<Tag> tags) {
-        return tags != null && tags.size() > 0;
-    }
-
-    private void updateReferencesBetweenCertificatesAndTags(long id, Set<Tag> tags) {
-        saveTags(tags);
-        daoHelper.updateTable(DELETE_REFERENCES_BETWEEN_CERTIFICATES_AND_TAGS, Collections.singletonMap("id", id));
-        saveReferencesBetweenCertificatesAndTags(id, tags);
+    public GiftCertificate save(GiftCertificate certificate) {
+        saveTags(certificate.getTags());
+        entityManager.persist(certificate);
+        return certificate;
     }
 
     private void saveTags(Set<Tag> tags) {
@@ -248,7 +63,131 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public void delete(GiftCertificate certificate) {
-        daoHelper.updateTable(DELETE_CERTIFICATE, certificate);
+    @SuppressWarnings("unchecked")
+    public List<GiftCertificate> getAll() {
+        return (List<GiftCertificate>) entityManager.createQuery("FROM GiftCertificate").getResultList();
+    }
+
+    @Override
+    public GiftCertificate getById(long id) {
+        GiftCertificate certificate = entityManager.find(GiftCertificate.class, id);
+        entityManager.detach(certificate);
+        return certificate;
+    }
+
+    @Override
+    public GiftCertificate getByName(String name) {
+        return (GiftCertificate) entityManager.createQuery("FROM GiftCertificate c WHERE c.name = :name")
+                .setParameter("name", name)
+                .getSingleResult();
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public List<GiftCertificate> getByTagName(List<String> sortTypes, String name) {
+        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name = :name ${value}";
+        return (List<GiftCertificate>) entityManager.createQuery(
+                substituteJpqlQueryVariable(defineSortType(sortTypes), jpql))
+                .setParameter("name", name)
+                .getResultList();
+    }
+
+    private String defineSortType(List<String> sortTypes) {
+        return isSortTypeExists(sortTypes) ? getTableFieldsForSorting(sortTypes) : "";
+    }
+
+    private boolean isSortTypeExists(List<String> sortTypes) {
+        return sortTypes != null && sortTypes.size() > 0;
+    }
+
+    private String getTableFieldsForSorting(List<String> sortTypes) {
+        sortTypes = getSortingParams(sortTypes);
+        return isSortTypeExists(sortTypes) ? produceParams(sortTypes) : "";
+    }
+
+    private List<String> getSortingParams(List<String> sortTypes) {
+        return sortTypes.stream()
+                .filter(SORTABLE_TABLE_FIELDS::contains)
+                .map(type -> type = "c.".concat(type.concat(SORTING_ORDER)))
+                .collect(Collectors.toList());
+    }
+
+    private String produceParams(List<String> params) {
+        return "ORDER BY " + String.join(", ", params);
+    }
+
+    private String substituteJpqlQueryVariable(String value, String source) {
+        return new StringSubstitutor(Collections.singletonMap("value", value)).replace(source);
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public List<GiftCertificate> searchByPartNameOrDescription(List<String> sortTypes,
+                                                               String partNameOrDescription) {
+        String jpql = "FROM GiftCertificate c WHERE c.name LIKE :text OR c.description LIKE :text ${value}";
+        return (List<GiftCertificate>) entityManager.createQuery(
+                substituteJpqlQueryVariable(defineSortType(sortTypes), jpql))
+                .setParameter("text", prepareParameterForInsertingToSqlScript(partNameOrDescription))
+                .getResultList();
+    }
+
+    @Override
+    @SuppressWarnings("all")
+    public List<GiftCertificate> searchByTagAndPartNameOrDescription(List<String> sortTypes, String tagName,
+                                                                     String text) {
+        String jpql = "SELECT DISTINCT c FROM GiftCertificate c JOIN c.tags t WHERE t.name = :name " +
+                "OR c.name LIKE :text OR c.description LIKE :text ${value}";
+        return (List<GiftCertificate>) entityManager.createQuery(
+                substituteJpqlQueryVariable(defineSortType(sortTypes), jpql))
+                .setParameter("name", tagName)
+                .setParameter("text", prepareParameterForInsertingToSqlScript(text))
+                .getResultList();
+    }
+
+    private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
+        return "%" + partNameOrDescription + "%";
+    }
+
+    @Override
+    @Transactional
+    public GiftCertificate update(GiftCertificate certificate) {
+        GiftCertificate exists = entityManager.find(GiftCertificate.class, certificate.getId());
+        saveTagsIfItWasPassed(certificate.getTags(), exists);
+        updateCertificateFields(exists, getFieldsMap(certificate, exists));
+        return entityManager.merge(exists);
+    }
+
+    private void saveTagsIfItWasPassed(Set<Tag> tags, GiftCertificate certificate) {
+        if (tags != null) {
+            saveTags(tags);
+            certificate.setTags(tags);
+        }
+    }
+
+    private Map<String, Object> getFieldsMap(GiftCertificate UpdatableCertificate, GiftCertificate existCertificate) {
+        Map<String, Object> fields = putFieldsToMap(new HashMap<>(), UpdatableCertificate);
+        putFieldsToMap(fields, existCertificate);
+        return fields;
+    }
+
+    private Map<String, Object> putFieldsToMap(Map<String, Object> fields, GiftCertificate certificate) {
+        fields.putIfAbsent("name", certificate.getName());
+        fields.putIfAbsent("description", certificate.getDescription());
+        fields.putIfAbsent("price", certificate.getPrice());
+        fields.putIfAbsent("duration", certificate.getDuration());
+        return fields;
+    }
+
+    private void updateCertificateFields(GiftCertificate certificate, Map<String, Object> fields) {
+        certificate.setName((String) fields.get("name"));
+        certificate.setDescription((String) fields.get("description"));
+        certificate.setPrice((BigDecimal) fields.get("price"));
+        certificate.setDuration((Integer) fields.get("duration"));
+    }
+
+    @Override
+    @Transactional
+    public void delete(GiftCertificate deletableCertificate) {
+        entityManager.remove(entityManager.find(GiftCertificate.class, deletableCertificate.getId()));
     }
 }

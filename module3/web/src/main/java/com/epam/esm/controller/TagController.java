@@ -5,7 +5,6 @@ import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,7 +40,7 @@ public class TagController {
     public Tag get(@PathVariable long id) {
         try {
             return service.getById(id);
-        } catch (EmptyResultDataAccessException ex) {
+        } catch (NullPointerException ex) {
             throw new LocalizedControllerException("exception.message.40401", 40401, HttpStatus.NOT_FOUND);
         }
     }

@@ -26,7 +26,6 @@ public class GlobalExceptionControllerAdviser extends ResponseEntityExceptionHan
     @ExceptionHandler(LocalizedControllerException.class)
     public ResponseEntity<Object> handleException(LocalizedControllerException ex, WebRequest request) {
         Map<String, Object> parameters = new HashMap<>();
-        logger.info(request.getLocale());
         parameters.put("errorMessage", resolveResourceBundle(ex, request.getLocale()));
         parameters.put("errorCode", ex.getErrorCode());
         return new ResponseEntity<>(parameters, ex.getStatus());

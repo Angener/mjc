@@ -1,7 +1,5 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.dto.GiftCertificateDto;
-import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.service.GiftCertificateService;
@@ -34,9 +32,9 @@ public class GiftCertificateController {
 
     @PostMapping("/giftCertificates")
     @ResponseStatus(HttpStatus.CREATED)
-    public GiftCertificate save(@RequestBody GiftCertificateDto dto) {
+    public GiftCertificate save(@RequestBody GiftCertificate certificate) {
         try {
-            return service.save(dto);
+            return service.save(certificate);
         } catch (DuplicateKeyException ex) {
             throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException ex) {
@@ -45,9 +43,9 @@ public class GiftCertificateController {
     }
 
     @PatchMapping("/giftCertificates")
-    public GiftCertificate update(@RequestBody GiftCertificateDto dto) {
+    public GiftCertificate update(@RequestBody GiftCertificate certificate) {
         try {
-            return service.update(dto);
+            return service.update(certificate);
         } catch (DuplicateKeyException ex) {
             throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         }
@@ -66,13 +64,13 @@ public class GiftCertificateController {
     public GiftCertificate getById(@PathVariable long id) {
         try {
             return service.getById(id);
-        } catch (EmptyResultDataAccessException ex) {
+        } catch (NullPointerException ex) {
             throw new LocalizedControllerException("exception.message.40402", 40402, HttpStatus.NOT_FOUND);
         }
     }
 
     @GetMapping("/giftCertificates/search")
-    public List<GiftCertificateWithTagsDto>
+    public List<GiftCertificate>
     get(@RequestParam(required = false, defaultValue = "") String tagName,
         @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
         @RequestParam(required = false) List<String> sortTypes) {

@@ -3,8 +3,6 @@ package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,21 +12,8 @@ import java.util.List;
 
 @Repository
 public class TagDaoImpl implements TagDao {
-    static String GET_ALL_CERTIFICATE_TAGS =
-            "SELECT tag.id, tag.name FROM tag " +
-                    "JOIN tag_gift_certificate tgc ON tag.id = tgc.tag_id " +
-                    "JOIN gift_certificate ON gift_certificate.id = tgc.gift_certificate_id " +
-                    "WHERE gift_certificate.id = :id;";
-    static RowMapper<Tag> mapper = (rs, mapRow) -> new Tag(rs.getLong("id"),
-            rs.getString("name"));
-    private final DaoHelper daoHelper;
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    public TagDaoImpl(DaoHelper daoHelper) {
-        this.daoHelper = daoHelper;
-    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -53,8 +38,12 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Tag> getAllGiftCertificateTags(GiftCertificate certificate) {
-        return daoHelper.getAllEntitiesFromTableReferencedEntity(GET_ALL_CERTIFICATE_TAGS, certificate, mapper);
+        return (List<Tag>) entityManager.createQuery(
+                "SELECT tag From Tag tag JOIN tag.giftCertificates g WHERE g.id = :id")
+                .setParameter("id", certificate.getId())
+                .getResultList();
     }
 
     @Override
@@ -66,7 +55,9 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     @Transactional
-    public void delete(Tag tag) {
-        entityManager.remove(entityManager.find(Tag.class, tag.getId()));
+    public void delete(Tag deletableTag) {
+        Tag tag = entityManager.find(Tag.class, deletableTag.getId());
+        tag.getGiftCertificates().forEach(certificate -> certificate.getTags().remove(tag));
+        entityManager.remove(tag);
     }
 }

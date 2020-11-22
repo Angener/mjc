@@ -1,19 +1,17 @@
 package com.epam.esm.service;
 
-import com.epam.esm.dto.GiftCertificateDto;
-import com.epam.esm.dto.GiftCertificateWithTagsDto;
 import com.epam.esm.entity.GiftCertificate;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
 
 public interface GiftCertificateService {
-    GiftCertificate save(GiftCertificateDto dto);
+    GiftCertificate save(GiftCertificate certificate);
 
     List<GiftCertificate> getAll();
 
-    List<GiftCertificateWithTagsDto> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
-                                            @Nullable List<String> sortTypes);
+    List<GiftCertificate> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
+                                 @Nullable List<String> sortTypes);
 
     GiftCertificate getById(long id);
 
@@ -23,7 +21,7 @@ public interface GiftCertificateService {
 
     List<GiftCertificate> searchByPartNameOrDescription(String partName);
 
-    GiftCertificate update(GiftCertificateDto dto);
+    GiftCertificate update(GiftCertificate certificate);
 
     void delete(GiftCertificate certificate);
 }

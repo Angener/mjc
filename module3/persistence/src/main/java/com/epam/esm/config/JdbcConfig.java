@@ -1,6 +1,5 @@
 package com.epam.esm.config;
 
-import com.epam.esm.dao.DaoHelper;
 import org.hibernate.dialect.PostgreSQL10Dialect;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -95,10 +94,5 @@ public class JdbcConfig {
     @Bean
     public SimpleJdbcInsert getTagGiftCertificateJdbcTemplate(JdbcTemplate jdbcTemplate) {
         return new SimpleJdbcInsert(jdbcTemplate).withTableName("tag_gift_certificate");
-    }
-
-    @Bean
-    public DaoHelper getDaoHelper(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        return new DaoHelper(namedParameterJdbcTemplate);
     }
 }

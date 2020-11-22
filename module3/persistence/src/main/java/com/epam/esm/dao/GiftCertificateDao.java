@@ -1,16 +1,13 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.entity.GiftCertificate;
-import com.epam.esm.entity.Tag;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public interface GiftCertificateDao {
 
-    GiftCertificate save(GiftCertificate certificate, Set<Tag> tags);
+    GiftCertificate save(GiftCertificate certificate);
 
     List<GiftCertificate> getAll();
 
@@ -25,7 +22,7 @@ public interface GiftCertificateDao {
     List<GiftCertificate> searchByTagAndPartNameOrDescription(@Nullable List<String> sortTypes,
                                                               String tagName, String text);
 
-    GiftCertificate update(Map<String, Object> updatableInfo, Set<Tag> tags);
+    GiftCertificate update(GiftCertificate certificate);
 
     void delete(GiftCertificate certificate);
 }
