@@ -35,15 +35,15 @@ public class GlobalExceptionControllerAdviser extends ResponseEntityExceptionHan
         return messageSource.getMessage(ex.getMessage(), null, locale);
     }
 
-    @ExceptionHandler({RuntimeException.class})
-    public ResponseEntity<Object> handleUnregisterException(RuntimeException ex, WebRequest request) {
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("errorMessage", resolveResourceBundle(request.getLocale()));
-        parameters.put("errorCode", 50001);
-        return new ResponseEntity<>(parameters, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private String resolveResourceBundle(Locale locale) {
-        return messageSource.getMessage("exception.message.50001", null, locale);
-    }
+//    @ExceptionHandler({RuntimeException.class})
+//    public ResponseEntity<Object> handleUnregisterException(RuntimeException ex, WebRequest request) {
+//        Map<String, Object> parameters = new HashMap<>();
+//        parameters.put("errorMessage", resolveResourceBundle(request.getLocale()));
+//        parameters.put("errorCode", 50001);
+//        return new ResponseEntity<>(parameters, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+//
+//    private String resolveResourceBundle(Locale locale) {
+//        return messageSource.getMessage("exception.message.50001", null, locale);
+//    }
 }

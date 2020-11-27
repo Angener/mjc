@@ -45,6 +45,7 @@ public class GiftCertificateController {
     @PatchMapping("/giftCertificates")
     public GiftCertificate update(@RequestBody GiftCertificate certificate) {
         try {
+            System.err.println(certificate);
             return service.update(certificate);
         } catch (DuplicateKeyException ex) {
             throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);

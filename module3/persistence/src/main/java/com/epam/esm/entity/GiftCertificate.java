@@ -34,8 +34,10 @@ public class GiftCertificate implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+    @Column(nullable = false, unique = true)
     String name;
     String description;
+    @Column(columnDefinition = "MONEY")
     BigDecimal price;
     @Column(name = "create_date", columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false)
     ZonedDateTime createDate;

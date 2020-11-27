@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -26,8 +27,9 @@ public class Tag implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NonNull String name;
-
+    @Column(nullable = false, unique = true)
+    @NonNull
+    private String name;
     @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<GiftCertificate> giftCertificates;
