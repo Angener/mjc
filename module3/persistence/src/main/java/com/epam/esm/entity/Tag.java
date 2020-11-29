@@ -8,13 +8,17 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.SqlResultSetMapping;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -22,6 +26,14 @@ import java.util.Set;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @EqualsAndHashCode(exclude = {"id", "giftCertificates"})
+@SqlResultSetMapping(name = "mostWidelyUsedTagMapper",
+        classes = {
+                @ConstructorResult(targetClass = MostWidelyUsedTag.class,
+                        columns = {
+                                @ColumnResult(name = "tag_id", type = long.class),
+                                @ColumnResult(name = "tag_name", type = String.class),
+                                @ColumnResult(name = "highest_cost", type = BigDecimal.class)
+                        })})
 public class Tag implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

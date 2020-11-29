@@ -58,19 +58,26 @@ public class UserController {
     public List<Order> getUserOrders(@PathVariable long userId) {
         try {
             return orderService.getUserOrders(userId);
-        } catch (NullPointerException ex) {
-            throw new LocalizedControllerException("exception.message.40403", 40403, HttpStatus.NOT_FOUND);
+        } catch (NoResultException ex) {
+            throw new LocalizedControllerException("exception.message.40405", 40405, HttpStatus.NOT_FOUND);
         }
     }
 
     @GetMapping("/users/{userId}/orders/{orderId}")
-    public OrderDetail getUserOrder(@PathVariable long orderId) {
-        Order order = orderService.get(orderId);
-        return new OrderDetail(order.getOrderDate(), order.getOrderCost());
+    public OrderDetail getUserOrder(@PathVariable long userId, @PathVariable long orderId) {
+        try {
+            return orderService.get(userId, orderId);
+        } catch (NoResultException ex) {
+            throw new LocalizedControllerException("exception.message.40404", 40404, HttpStatus.NOT_FOUND);
+        }
     }
 
-//    @GetMapping("/bestOrderTag")
-//    public MostWidelyUsedTag getMostWidelyUsedTag(@RequestBody User user){
-//        return orderService.getMostWidelyUsedTag(user);
-//    }
+    @GetMapping("/bestUserOrderTag/{userId}")
+    public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable long userId) {
+        try {
+            return orderService.getMostWidelyUsedTag(userId);
+        } catch (NoResultException ex) {
+            throw new LocalizedControllerException("exception.message.40406", 40406, HttpStatus.NOT_FOUND);
+        }
+    }
 }

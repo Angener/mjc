@@ -1,15 +1,18 @@
 package com.epam.esm.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-@AllArgsConstructor
 public class MostWidelyUsedTag implements Serializable {
     private static final long serialVersionUID = 1L;
-    private Tag motWidelyUsedTag;
-    private BigDecimal highestOrderCost;
+    private final Tag mostWidelyUsedTag;
+    private final BigDecimal highestCost;
+
+    public MostWidelyUsedTag(long id, String name, BigDecimal highestOrderCost) {
+        mostWidelyUsedTag = new Tag(id, name);
+        this.highestCost = highestOrderCost;
+    }
 }
