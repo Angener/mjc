@@ -38,7 +38,7 @@ public class Tag implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
     @Column(nullable = false, unique = true)
     @NonNull
     private String name;
@@ -46,7 +46,7 @@ public class Tag implements Serializable {
     @JsonIgnore
     private Set<GiftCertificate> giftCertificates;
 
-    public Tag(long id, @NonNull String name) {
+    public Tag(int id, @NonNull String name) {
         this.id = id;
         this.name = name;
     }

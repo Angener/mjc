@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,16 +29,19 @@ public class TagController {
     }
 
     @GetMapping(value = "/tags")
-    public List<Tag> getAll() {
+    public List<Tag> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                            @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
         try {
-            return service.getAll();
+            return service.getAll(page, size);
         } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException("exception.message.40401", 40401, HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException ex) {
+            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/tags/{id}")
-    public Tag get(@PathVariable long id) {
+    public Tag get(@PathVariable int id) {
         try {
             return service.getById(id);
         } catch (NullPointerException ex) {

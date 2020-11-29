@@ -11,7 +11,7 @@ public class MostWidelyUsedTag implements Serializable {
     private final Tag mostWidelyUsedTag;
     private final BigDecimal highestCost;
 
-    public MostWidelyUsedTag(long id, String name, BigDecimal highestOrderCost) {
+    public MostWidelyUsedTag(int id, String name, BigDecimal highestOrderCost) {
         mostWidelyUsedTag = new Tag(id, name);
         this.highestCost = highestOrderCost;
     }

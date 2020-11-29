@@ -52,10 +52,10 @@ public class TagServiceImplTest {
 
     @Test
     public void getById() {
-        when(dao.getById(anyLong())).thenReturn(tags.get(0));
+        when(dao.getById(anyInt())).thenReturn(tags.get(0));
 
-        assertEquals(tags.get(0), service.getById(anyLong()));
-        verify(dao).getById(anyLong());
+        assertEquals(tags.get(0), service.getById(anyInt()));
+        verify(dao).getById(anyInt());
         verifyNoMoreInteractions(dao);
     }
 

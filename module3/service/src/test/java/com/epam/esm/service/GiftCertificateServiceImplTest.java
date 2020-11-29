@@ -60,7 +60,7 @@ public class GiftCertificateServiceImplTest {
 
     private void setCertificate() {
         certificate = new GiftCertificate();
-        certificate.setId(1L);
+        certificate.setId(1);
         certificate.setName("name");
         certificate.setDescription("description");
         certificate.setTags(tags);
@@ -123,10 +123,10 @@ public class GiftCertificateServiceImplTest {
 
     @Test
     public void getById() {
-        when(dao.getById(anyLong())).thenReturn(certificates.get(0));
+        when(dao.getById(anyInt())).thenReturn(certificates.get(0));
 
-        assertEquals(certificates.get(0), service.getById(anyLong()));
-        verify(dao).getById(anyLong());
+        assertEquals(certificates.get(0), service.getById(anyInt()));
+        verify(dao).getById(anyInt());
     }
 
     @Test

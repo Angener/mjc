@@ -72,7 +72,16 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     @Override
-    public GiftCertificate getById(long id) {
+    @SuppressWarnings("unchecked")
+    public List<GiftCertificate> getAll(int startPosition, int recordsQuantity) {
+        return (List<GiftCertificate>) entityManager.createQuery("FROM GiftCertificate")
+                .setFirstResult(startPosition)
+                .setMaxResults(recordsQuantity)
+                .getResultList();
+    }
+
+    @Override
+    public GiftCertificate getById(int id) {
         GiftCertificate certificate = entityManager.find(GiftCertificate.class, id);
         entityManager.detach(certificate);
         return certificate;
@@ -95,22 +104,22 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
         return query.getResultList();
     }
 
-    private String defineConditions(Set<String> tagNames){
+    private String defineConditions(Set<String> tagNames) {
         return produceConditions(prepareConditions(tagNames));
     }
 
-    private Set<String> prepareConditions(Set<String> conditions){
+    private Set<String> prepareConditions(Set<String> conditions) {
         return conditions.stream()
                 .filter(condition -> condition.trim().length() > 0)
                 .map(condition -> condition = ("=:").concat(condition.replaceAll(" ", "")))
                 .collect(Collectors.toSet());
     }
 
-    private String produceConditions(Set<String> conditions){
+    private String produceConditions(Set<String> conditions) {
         return String.join(CONDITIONS_TYPE.concat("t.").concat(SEARCHABLE_COLUMN), conditions);
     }
 
-    private String substituteJpqlQueryVariable(String conditions, String sortTypes, String source){
+    private String substituteJpqlQueryVariable(String conditions, String sortTypes, String source) {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("conditions", conditions);
         parameters.put("value", sortTypes);
@@ -141,7 +150,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
         return "ORDER BY " + String.join(", ", params);
     }
 
-    private void setQueryParameters(Query query, Set<String> parameters){
+    private void setQueryParameters(Query query, Set<String> parameters) {
         parameters.stream()
                 .filter(parameter -> parameter.trim().length() > 0)
                 .forEach(parameter -> {
@@ -223,5 +232,10 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Transactional
     public void delete(GiftCertificate deletableCertificate) {
         entityManager.remove(entityManager.find(GiftCertificate.class, deletableCertificate.getId()));
+    }
+
+    @Override
+    public long getGiftCertificatesQuantity() {
+        return (long) entityManager.createQuery("SELECT COUNT(*) FROM GiftCertificate").getSingleResult();
     }
 }

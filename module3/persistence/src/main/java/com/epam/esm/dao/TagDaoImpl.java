@@ -22,7 +22,16 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public Tag getById(long id) {
+    @SuppressWarnings("unchecked")
+    public List<Tag> getAll(int startPosition, int recordsQuantity) {
+        return (List<Tag>) entityManager.createQuery("FROM Tag")
+                .setFirstResult(startPosition)
+                .setMaxResults(recordsQuantity)
+                .getResultList();
+    }
+
+    @Override
+    public Tag getById(int id) {
         Tag tag = entityManager.find(Tag.class, id);
         entityManager.detach(tag);
         return tag;
@@ -59,5 +68,10 @@ public class TagDaoImpl implements TagDao {
         Tag tag = entityManager.find(Tag.class, deletableTag.getId());
         tag.getGiftCertificates().forEach(certificate -> certificate.getTags().remove(tag));
         entityManager.remove(tag);
+    }
+
+    @Override
+    public long getTagsQuantity() {
+        return (long) entityManager.createQuery("SELECT COUNT(*) FROM Tag").getSingleResult();
     }
 }

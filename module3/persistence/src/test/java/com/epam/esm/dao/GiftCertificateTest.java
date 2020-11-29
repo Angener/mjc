@@ -116,7 +116,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         updatableTags.add(new Tag(2, "second tag"));
         updatableTags.add(new Tag("third tag"));
         updatableTags.add(new Tag("fourth tag"));
-        certificate.setId(1L);
+        certificate.setId(1);
         certificate.setTags(updatableTags);
         GiftCertificate testableCertificate = dao.update(certificate);
         certificate.setName("second");
@@ -139,7 +139,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
 
     @Test
     public void delete() {
-        certificate.setId(1L);
+        certificate.setId(1);
         dao.delete(certificate);
         assertEquals(4, dao.getByTagName(sortTypes, Collections.singleton("first tag")).size());
     }

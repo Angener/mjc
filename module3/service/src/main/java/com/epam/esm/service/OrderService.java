@@ -9,9 +9,11 @@ import java.util.List;
 public interface OrderService {
     Order createOrder(Order order);
 
-    List<Order> getUserOrders(long userId);
+    List<Order> getUserOrders(int userId);
 
-    OrderDetail get(long userId, long orderId);
+    List<Order> getUserOrders(int userId, int page, int recordsPerPage);
 
-    MostWidelyUsedTag getMostWidelyUsedTag(long userId);
+    OrderDetail get(int userId, int orderId);
+
+    MostWidelyUsedTag getMostWidelyUsedTag(int userId);
 }

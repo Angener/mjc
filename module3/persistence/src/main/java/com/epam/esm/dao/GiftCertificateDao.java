@@ -12,7 +12,9 @@ public interface GiftCertificateDao {
 
     List<GiftCertificate> getAll();
 
-    GiftCertificate getById(long id);
+    List<GiftCertificate> getAll(int startPosition, int recordsQuantity);
+
+    GiftCertificate getById(int id);
 
     GiftCertificate getByName(String certificateName);
 
@@ -26,4 +28,6 @@ public interface GiftCertificateDao {
     GiftCertificate update(GiftCertificate certificate);
 
     void delete(GiftCertificate certificate);
+
+    long getGiftCertificatesQuantity();
 }

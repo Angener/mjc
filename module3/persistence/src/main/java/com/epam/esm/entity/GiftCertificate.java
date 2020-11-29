@@ -33,7 +33,7 @@ public class GiftCertificate implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    int id;
     @Column(nullable = false, unique = true)
     String name;
     String description;
@@ -54,7 +54,7 @@ public class GiftCertificate implements Serializable {
     @EqualsAndHashCode.Exclude
     Set<Tag> tags;
 
-    public GiftCertificate(long id, String name, String description, BigDecimal price,
+    public GiftCertificate(int id, String name, String description, BigDecimal price,
                            ZonedDateTime createDate, ZonedDateTime lastUpdateDate, int duration) {
         this.id = id;
         this.name = name;

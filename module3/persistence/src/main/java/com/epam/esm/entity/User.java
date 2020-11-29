@@ -27,7 +27,7 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
     @Column(nullable = false, unique = true)
     @NonNull
     private String name;
@@ -35,7 +35,7 @@ public class User implements Serializable {
     @JsonIgnore
     private Set<Order> orders;
 
-    public User(long id, @NonNull String name) {
+    public User(int id, @NonNull String name) {
         this.id = id;
         this.name = name;
     }

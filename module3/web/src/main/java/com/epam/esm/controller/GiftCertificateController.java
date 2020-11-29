@@ -52,17 +52,20 @@ public class GiftCertificateController {
         }
     }
 
-    @GetMapping("/giftCertificates")
-    public List<GiftCertificate> getAll() {
+    @GetMapping(value = "/giftCertificates")
+    public List<GiftCertificate> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                                        @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
         try {
-            return service.getAll();
+            return service.getAll(page, size);
         } catch (EmptyResultDataAccessException ex) {
             throw new LocalizedControllerException("exception.message.40402", 40402, HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException ex) {
+            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/giftCertificates/{id}")
-    public GiftCertificate getById(@PathVariable long id) {
+    public GiftCertificate getById(@PathVariable int id) {
         try {
             return service.getById(id);
         } catch (NullPointerException ex) {
@@ -72,10 +75,17 @@ public class GiftCertificateController {
 
     @GetMapping("/giftCertificates/search")
     public List<GiftCertificate>
-    get(@RequestParam(required = false) Set<String> tagNames,
-        @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
-        @RequestParam(required = false) List<String> sortTypes) {
-        return service.search(tagNames, partNameOrDesc, sortTypes);
+    get(@RequestParam(value = "tagNames", required = false) Set<String> tagNames,
+        @RequestParam(value = "partNameOrDesc", required = false, defaultValue = "") String partNameOrDesc,
+        @RequestParam(value = "sortTypes", required = false) List<String> sortTypes,
+        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+        @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
+        List<GiftCertificate> certificates = service.search(tagNames, partNameOrDesc, sortTypes);
+        try {
+            return size > 0 ? service.getPaginatedCertificateList(certificates, page, size) : certificates;
+        } catch (IllegalArgumentException ex) {
+            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/giftCertificates")

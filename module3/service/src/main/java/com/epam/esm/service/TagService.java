@@ -8,9 +8,11 @@ import java.util.List;
 public interface TagService {
     List<Tag> getAll();
 
+    List<Tag> getAll(int page, int recordsPerPage);
+
     List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
 
-    Tag getById(long id);
+    Tag getById(int id);
 
     Tag get(String name);
 

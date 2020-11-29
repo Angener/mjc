@@ -23,14 +23,24 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Order> getUserOrders(long userId) {
+    public List<Order> getUserOrders(int userId) {
         return (List<Order>) entityManager.createQuery("FROM Order WHERE user_id = :userId")
                 .setParameter("userId", userId)
                 .getResultList();
     }
 
     @Override
-    public Order get(long userId, long orderId) {
+    @SuppressWarnings("unchecked")
+    public List<Order> getUserOrders(int userId, int startPosition, int recordsQuantity) {
+        return (List<Order>) entityManager.createQuery("FROM Order WHERE user_id = :userId")
+                .setParameter("userId", userId)
+                .setFirstResult(startPosition)
+                .setMaxResults(recordsQuantity)
+                .getResultList();
+    }
+
+    @Override
+    public Order get(int userId, int orderId) {
         return (Order) entityManager.createQuery("FROM Order WHERE user_Id = :userId AND id = :orderId")
                 .setParameter("userId", userId)
                 .setParameter("orderId", orderId)
@@ -38,7 +48,7 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     @Override
-    public MostWidelyUsedTag getMostWidelyUsedTag(long userId) {
+    public MostWidelyUsedTag getMostWidelyUsedTag(int userId) {
         return (MostWidelyUsedTag) entityManager.createNativeQuery(
                 "SELECT tag.id AS tag_id, tag.name AS tag_name, MAX (o.order_cost) AS highest_cost " +
                         "FROM tag tag " +
@@ -51,5 +61,10 @@ public class OrderDaoImpl implements OrderDao {
                 "mostWidelyUsedTagMapper")
                 .setParameter("userId", userId)
                 .getSingleResult();
+    }
+
+    @Override
+    public long getOrdersQuantity() {
+        return (long) entityManager.createQuery("SELECT COUNT(*) FROM Order").getSingleResult();
     }
 }

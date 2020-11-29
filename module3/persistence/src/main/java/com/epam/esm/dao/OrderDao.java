@@ -8,9 +8,13 @@ import java.util.List;
 public interface OrderDao {
     Order createOrder(Order order);
 
-    List<Order> getUserOrders(long userId);
+    List<Order> getUserOrders(int userId);
 
-    Order get(long userId, long orderId);
+    List<Order> getUserOrders(int userId, int startPosition, int recordsQuantity);
 
-    MostWidelyUsedTag getMostWidelyUsedTag(long userId);
+    Order get(int userId, int orderId);
+
+    MostWidelyUsedTag getMostWidelyUsedTag(int userId);
+
+    long getOrdersQuantity();
 }

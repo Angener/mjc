@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,17 +31,20 @@ public class UserController {
         this.orderService = orderService;
     }
 
-    @GetMapping("/users")
-    public List<User> getAll() {
+    @GetMapping(value = "/users")
+    public List<User> getAll(@RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                             @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
         try {
-            return userService.getAll();
+            return userService.getAll(page, size);
         } catch (NoResultException ex) {
             throw new LocalizedControllerException("exception.message.40403", 40403, HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException ex) {
+            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/users/{id}")
-    public User get(@PathVariable long id) {
+    public User get(@PathVariable int id) {
         try {
             return userService.getById(id);
         } catch (NullPointerException ex) {
@@ -55,16 +59,20 @@ public class UserController {
     }
 
     @GetMapping("/users/{userId}/orders")
-    public List<Order> getUserOrders(@PathVariable long userId) {
+    public List<Order> getUserOrders(@PathVariable int userId,
+                                     @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+                                     @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
         try {
-            return orderService.getUserOrders(userId);
+            return orderService.getUserOrders(userId, page, size);
         } catch (NoResultException ex) {
             throw new LocalizedControllerException("exception.message.40405", 40405, HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException ex) {
+            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping("/users/{userId}/orders/{orderId}")
-    public OrderDetail getUserOrder(@PathVariable long userId, @PathVariable long orderId) {
+    public OrderDetail getUserOrder(@PathVariable int userId, @PathVariable int orderId) {
         try {
             return orderService.get(userId, orderId);
         } catch (NoResultException ex) {
@@ -73,7 +81,7 @@ public class UserController {
     }
 
     @GetMapping("/bestUserOrderTag/{userId}")
-    public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable long userId) {
+    public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable int userId) {
         try {
             return orderService.getMostWidelyUsedTag(userId);
         } catch (NoResultException ex) {

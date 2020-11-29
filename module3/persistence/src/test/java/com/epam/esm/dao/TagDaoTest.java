@@ -51,7 +51,7 @@ public class TagDaoTest extends InMemoryDbConfig {
     @Test
     public void getAllGiftCertificateTags() {
         GiftCertificate certificate = mock(GiftCertificate.class);
-        when(certificate.getId()).thenReturn(1L);
+        when(certificate.getId()).thenReturn(1);
 
         assertEquals(2, dao.getAllGiftCertificateTags(certificate).size());
     }

@@ -28,7 +28,7 @@ public class Order {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
     @Column(name = "create_date", columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false)
     private ZonedDateTime orderDate;
     @Column(name = "order_cost", columnDefinition = "MONEY", nullable = false, updatable = false)

@@ -40,9 +40,9 @@ public class UserServiceImplTest {
 
     @Test
     public void getById() {
-        when(dao.getById(anyLong())).thenReturn(users.get(0));
+        when(dao.getById(anyInt())).thenReturn(users.get(0));
 
-        assertEquals(users.get(0), service.getById(anyLong()));
-        verify(dao).getById(anyLong());
+        assertEquals(users.get(0), service.getById(anyInt()));
+        verify(dao).getById(anyInt());
     }
 }
