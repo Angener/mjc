@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
 public class GiftCertificateServiceImplTest {
-    static final String TAG_NAME = "tagName";
     static final String PART_NAME = "partName";
+    static final Set<String> TAG_NAME = Collections.singleton("tagName");
     static Set<Tag> tags;
     static List<String> tagNames;
     static List<GiftCertificate> certificates;

@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -94,13 +95,14 @@ public class GiftCertificateTest extends InMemoryDbConfig {
 
     @Test
     public void getByTagName() {
-        assertEquals(1, dao.getByTagName(sortTypes, "second tag").size());
-        assertEquals(5, dao.getByTagName(sortTypes, "first tag").size());
+        assertEquals(1, dao.getByTagName(sortTypes, Collections.singleton("second tag")).size());
+        assertEquals(5, dao.getByTagName(sortTypes, Collections.singleton("first tag")).size());
     }
 
     @Test
     public void searchByTagAndPartNameOrDescription() {
-        assertEquals(4, dao.searchByTagAndPartNameOrDescription(sortTypes, "second tag", "th").size());
+        assertEquals(4, dao.searchByTagAndPartNameOrDescription(sortTypes,
+                Collections.singleton("second tag"), "th").size());
     }
 
     @Test
@@ -119,9 +121,9 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         GiftCertificate testableCertificate = dao.update(certificate);
         certificate.setName("second");
 
-        assertEquals(4, dao.getByTagName(sortTypes, "first tag").size());
-        assertEquals(1, dao.getByTagName(sortTypes, "third tag").size());
-        assertEquals(1, dao.getByTagName(sortTypes, "fourth tag").size());
+        assertEquals(4, dao.getByTagName(sortTypes, Collections.singleton("first tag")).size());
+        assertEquals(1, dao.getByTagName(sortTypes, Collections.singleton("third tag")).size());
+        assertEquals(1, dao.getByTagName(sortTypes, Collections.singleton("fourth tag")).size());
         assertEquals(1, testableCertificate.getId());
         assertEquals("sixth", testableCertificate.getName());
         assertEquals("sixth gift card", testableCertificate.getDescription());
@@ -139,31 +141,31 @@ public class GiftCertificateTest extends InMemoryDbConfig {
     public void delete() {
         certificate.setId(1L);
         dao.delete(certificate);
-        assertEquals(4, dao.getByTagName(sortTypes, "first tag").size());
+        assertEquals(4, dao.getByTagName(sortTypes, Collections.singleton("first tag")).size());
     }
 
     @Test
     public void sortByNameAndDate() {
-        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, Collections.singleton("first tag"));
         sortTypes.add("createDate");
         sortTypes.add("name");
         certificates.sort(DATE_COMPARATOR.thenComparing(NAME_COMPARATOR));
-        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, Collections.singleton("first tag")));
     }
 
     @Test
     public void sortByName() {
-        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, Collections.singleton("first tag"));
         sortTypes.add("name");
         certificates.sort(NAME_COMPARATOR);
-        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, Collections.singleton("first tag")));
     }
 
     @Test
     public void sortByDate() {
-        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, "first tag");
+        List<GiftCertificate> certificates = dao.getByTagName(sortTypes, Collections.singleton("first tag"));
         sortTypes.add("createDate");
         certificates.sort(DATE_COMPARATOR);
-        assertEquals(certificates, dao.getByTagName(sortTypes, "first tag"));
+        assertEquals(certificates, dao.getByTagName(sortTypes, Collections.singleton("first tag")));
     }
 }
