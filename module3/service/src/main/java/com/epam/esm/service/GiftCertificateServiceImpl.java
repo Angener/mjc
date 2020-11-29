@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class GiftCertificateServiceImpl implements GiftCertificateService {
@@ -42,40 +43,45 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificate> search(@Nullable String tagName, @Nullable String partOfNameOrDesc,
+    public List<GiftCertificate> search(@Nullable Set<String> tagNames, @Nullable String partOfNameOrDesc,
                                         @Nullable List<String> sortTypes) {
-        return (isSearchParametersPassed(tagName, partOfNameOrDesc)) ?
-                collect(sortTypes, tagName, partOfNameOrDesc) : new ArrayList<>();
+        return (isSearchParametersPassed(tagNames, partOfNameOrDesc)) ?
+                collect(sortTypes, tagNames, partOfNameOrDesc) : new ArrayList<>();
     }
 
-    private boolean isSearchParametersPassed(String tagName, String partOfName) {
-        return isParameterPassed(tagName) || isParameterPassed(partOfName);
+    private boolean isSearchParametersPassed(Set<String> tagNames, String partOfName) {
+        return isTagNamesPassed(tagNames) || isPartNameOrDescriptionPassed(partOfName);
     }
 
-    private boolean isParameterPassed(String param) {
+    private boolean isPartNameOrDescriptionPassed(String param) {
         return param != null && param.trim().length() > 0;
     }
 
-    private List<GiftCertificate> collect(List<String> sortTypes, String tagName, String partOfName) {
-        return (isParameterPassed(tagName)) ?
-                collectByTagAndPartNameOrDescription(sortTypes, tagName, partOfName)
+    private boolean isTagNamesPassed(Set<String> tagNames){
+        return tagNames != null && tagNames.size() > 0;
+    }
+
+    private List<GiftCertificate> collect(List<String> sortTypes, Set<String> tagNames, String partOfName) {
+        return (isTagNamesPassed(tagNames)) ?
+                collectByTagAndPartNameOrDescription(sortTypes, tagNames, partOfName)
                 : (collectByPartNameOrDescriptionOnly(sortTypes, partOfName));
     }
 
     private List<GiftCertificate> collectByTagAndPartNameOrDescription
-            (List<String> sortTypes, String tagName, String partOfName) {
-        return ((isParameterPassed(partOfName)) ? (collectByBothParameters(sortTypes, tagName, partOfName)) :
-                (collectByTagNameOnly(sortTypes, tagName)));
+            (List<String> sortTypes, Set<String> tagNames, String partOfName) {
+        return ((isPartNameOrDescriptionPassed(partOfName)) ?
+                (collectByBothParameters(sortTypes, tagNames, partOfName)) :
+                (collectByTagNameOnly(sortTypes, tagNames)));
     }
 
     private List<GiftCertificate> collectByBothParameters(List<String> sortTypes,
-                                                          String tagName,
+                                                          Set<String> tagNames,
                                                           String partNameOrDescription) {
-        return giftCertificateDao.searchByTagAndPartNameOrDescription(sortTypes, tagName, partNameOrDescription);
+        return giftCertificateDao.searchByTagAndPartNameOrDescription(sortTypes, tagNames, partNameOrDescription);
     }
 
-    private List<GiftCertificate> collectByTagNameOnly(List<String> sortTypes, String tagName) {
-        return giftCertificateDao.getByTagName(sortTypes, tagName);
+    private List<GiftCertificate> collectByTagNameOnly(List<String> sortTypes, Set<String> tagNames) {
+        return giftCertificateDao.getByTagName(sortTypes, tagNames);
     }
 
     private List<GiftCertificate> collectByPartNameOrDescriptionOnly(List<String> sortTypes,
@@ -89,8 +95,8 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     }
 
     @Override
-    public List<GiftCertificate> getByTagName(String tagName) {
-        return giftCertificateDao.getByTagName(null, tagName);
+    public List<GiftCertificate> getByTagName(Set<String> tagNames) {
+        return giftCertificateDao.getByTagName(null, tagNames);
     }
 
     @Override

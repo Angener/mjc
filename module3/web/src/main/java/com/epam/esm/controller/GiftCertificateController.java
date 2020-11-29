@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class GiftCertificateController {
@@ -71,10 +72,10 @@ public class GiftCertificateController {
 
     @GetMapping("/giftCertificates/search")
     public List<GiftCertificate>
-    get(@RequestParam(required = false, defaultValue = "") String tagName,
+    get(@RequestParam(required = false) Set<String> tagNames,
         @RequestParam(required = false, defaultValue = "") String partNameOrDesc,
         @RequestParam(required = false) List<String> sortTypes) {
-        return service.search(tagName, partNameOrDesc, sortTypes);
+        return service.search(tagNames, partNameOrDesc, sortTypes);
     }
 
     @DeleteMapping("/giftCertificates")

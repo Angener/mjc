@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificateDaoImpl implements GiftCertificateDao {
     static final String SORTING_ORDER = " ASC";
+    static final String CONDITIONS_TYPE = " AND ";
+    static final String SEARCHABLE_COLUMN = "name";
     static List<String> SORTABLE_TABLE_FIELDS = Arrays.asList("name", "createDate");
 
     final TagDao tagDao;
@@ -84,12 +87,34 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @SuppressWarnings("all")
-    public List<GiftCertificate> getByTagName(List<String> sortTypes, String name) {
-        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name = :name ${value}";
-        return (List<GiftCertificate>) entityManager.createQuery(
-                substituteJpqlQueryVariable(defineSortType(sortTypes), jpql))
-                .setParameter("name", name)
-                .getResultList();
+    public List<GiftCertificate> getByTagName(List<String> sortTypes, Set<String> names) {
+        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name ${conditions} ${value}";
+        Query query = entityManager
+                .createQuery(substituteJpqlQueryVariable(defineConditions(names), defineSortType(sortTypes), jpql));
+        setQueryParameters(query, names);
+        return query.getResultList();
+    }
+
+    private String defineConditions(Set<String> tagNames){
+        return produceConditions(prepareConditions(tagNames));
+    }
+
+    private Set<String> prepareConditions(Set<String> conditions){
+        return conditions.stream()
+                .filter(condition -> condition.trim().length() > 0)
+                .map(condition -> condition = ("=:").concat(condition.replaceAll(" ", "")))
+                .collect(Collectors.toSet());
+    }
+
+    private String produceConditions(Set<String> conditions){
+        return String.join(CONDITIONS_TYPE.concat("t.").concat(SEARCHABLE_COLUMN), conditions);
+    }
+
+    private String substituteJpqlQueryVariable(String conditions, String sortTypes, String source){
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("conditions", conditions);
+        parameters.put("value", sortTypes);
+        return new StringSubstitutor(parameters).replace(source);
     }
 
     private String defineSortType(List<String> sortTypes) {
@@ -116,6 +141,15 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
         return "ORDER BY " + String.join(", ", params);
     }
 
+    private void setQueryParameters(Query query, Set<String> parameters){
+        parameters.stream()
+                .filter(parameter -> parameter.trim().length() > 0)
+                .forEach(parameter -> {
+                    String condition = parameter.replaceAll(" ", "");
+                    query.setParameter(condition, parameter);
+                });
+    }
+
     private String substituteJpqlQueryVariable(String value, String source) {
         return new StringSubstitutor(Collections.singletonMap("value", value)).replace(source);
     }
@@ -133,15 +167,15 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
 
     @Override
     @SuppressWarnings("all")
-    public List<GiftCertificate> searchByTagAndPartNameOrDescription(List<String> sortTypes, String tagName,
+    public List<GiftCertificate> searchByTagAndPartNameOrDescription(List<String> sortTypes, Set<String> tagNames,
                                                                      String text) {
-        String jpql = "SELECT DISTINCT c FROM GiftCertificate c JOIN c.tags t WHERE t.name = :name " +
+        String jpql = "SELECT DISTINCT c FROM GiftCertificate c JOIN c.tags t WHERE t.name ${conditions} " +
                 "OR c.name LIKE :text OR c.description LIKE :text ${value}";
-        return (List<GiftCertificate>) entityManager.createQuery(
-                substituteJpqlQueryVariable(defineSortType(sortTypes), jpql))
-                .setParameter("name", tagName)
-                .setParameter("text", prepareParameterForInsertingToSqlScript(text))
-                .getResultList();
+        Query query = entityManager
+                .createQuery(substituteJpqlQueryVariable(defineConditions(tagNames), defineSortType(sortTypes), jpql))
+                .setParameter("text", prepareParameterForInsertingToSqlScript(text));
+        setQueryParameters(query, tagNames);
+        return query.getResultList();
     }
 
     private String prepareParameterForInsertingToSqlScript(String partNameOrDescription) {
