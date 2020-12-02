@@ -19,4 +19,6 @@ public interface TagService {
     Tag save(Tag tag);
 
     void delete(Tag tag);
+
+    long getTagsQuantity();
 }

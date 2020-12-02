@@ -152,4 +152,10 @@ public class GiftCertificateServiceImpl implements GiftCertificateService {
     public void delete(GiftCertificate certificate) {
         giftCertificateDao.delete(certificate);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getGiftCertificatesQuantity(){
+        return giftCertificateDao.getGiftCertificatesQuantity();
+    }
 }

@@ -29,4 +29,6 @@ public interface GiftCertificateService {
     GiftCertificate update(GiftCertificate certificate);
 
     void delete(GiftCertificate certificate);
+
+    long getGiftCertificatesQuantity();
 }

@@ -62,7 +62,7 @@ public class JdbcConfig {
 
     private JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
-        jpaVendorAdapter.setShowSql(true);
+        jpaVendorAdapter.setShowSql(false);
         jpaVendorAdapter.setDatabase(Database.POSTGRESQL);
         jpaVendorAdapter.setDatabasePlatform(PostgreSQL10Dialect.class.getName());
         jpaVendorAdapter.setGenerateDdl(false);

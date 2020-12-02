@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
@@ -25,7 +26,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-@EqualsAndHashCode(exclude = {"id", "giftCertificates"})
+@EqualsAndHashCode(exclude = {"id", "giftCertificates"}, callSuper = false)
 @SqlResultSetMapping(name = "mostWidelyUsedTagMapper",
         classes = {
                 @ConstructorResult(targetClass = MostWidelyUsedTag.class,
@@ -34,7 +35,7 @@ import java.util.Set;
                                 @ColumnResult(name = "tag_name", type = String.class),
                                 @ColumnResult(name = "highest_cost", type = BigDecimal.class)
                         })})
-public class Tag implements Serializable {
+public class Tag extends RepresentationModel<Tag> implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

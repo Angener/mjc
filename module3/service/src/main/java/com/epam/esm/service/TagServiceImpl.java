@@ -82,4 +82,10 @@ public class TagServiceImpl implements TagService {
     public void delete(Tag tag) {
         tagDao.delete(tag);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getTagsQuantity(){
+        return tagDao.getTagsQuantity();
+    }
 }
