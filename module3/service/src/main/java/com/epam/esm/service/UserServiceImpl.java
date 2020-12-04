@@ -58,4 +58,10 @@ public class UserServiceImpl implements UserService {
     public User getById(int id) {
         return dao.getById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getUsersQuantity() {
+        return dao.getUsersQuantity();
+    }
 }

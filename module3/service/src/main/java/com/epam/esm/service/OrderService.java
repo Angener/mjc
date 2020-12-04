@@ -16,4 +16,6 @@ public interface OrderService {
     OrderDetail get(int userId, int orderId);
 
     MostWidelyUsedTag getMostWidelyUsedTag(int userId);
+
+    long getOrdersQuantity(int userId);
 }

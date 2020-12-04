@@ -76,12 +76,15 @@ public class GiftCertificateController {
 
     private CollectionModel<GiftCertificate> getGiftCertificateCollectionModel(List<GiftCertificate> certificates,
                                                                                int page, int size) {
-        certificates.forEach(this::linkCertificate);
+        linkCertificates(certificates);
         CollectionModel<GiftCertificate> model = CollectionModel
-                .of(certificates, linkTo(methodOn(GiftCertificateController.class)
-                        .getAll(page, size)).withSelfRel());
+                .of(certificates, linkTo(methodOn(GiftCertificateController.class).getAll(page, size)).withSelfRel());
         paginateModel(model, page, size);
         return model;
+    }
+
+    private void linkCertificates(List<GiftCertificate> certificates) {
+        certificates.forEach(this::linkCertificate);
     }
 
     private void linkCertificate(GiftCertificate certificate) {
@@ -139,148 +142,126 @@ public class GiftCertificateController {
     }
 
     private int findLastPageNumber(long tagsQuantity, int size) {
-        int lastPage = (int) (tagsQuantity + size - 1) / size - 1;
-        return tagsQuantity % lastPage == 0 ? lastPage - 1 : lastPage;
+        return (int) (tagsQuantity + size - 1) / size - 1;
     }
 
     @GetMapping("/giftCertificates/{id}")
     public GiftCertificate getById(@PathVariable int id) {
         try {
-            return giftCertificateService.getById(id);
+            return getLinkedCertificate(giftCertificateService.getById(id));
         } catch (NullPointerException ex) {
             throw new LocalizedControllerException("exception.message.40402", 40402, HttpStatus.NOT_FOUND);
         }
     }
 
+    private GiftCertificate getLinkedCertificate(GiftCertificate certificate) {
+        linkCertificate(certificate);
+        return certificate;
+    }
+
     @GetMapping("/giftCertificates/search")
     public CollectionModel<GiftCertificate> getCertificates(
             @RequestParam(value = "tagNames", required = false) Set<String> tagNames,
-        @RequestParam(value = "partNameOrDesc", required = false, defaultValue = "") String partNameOrDesc,
-        @RequestParam(value = "sortTypes", required = false) List<String> sortTypes,
-        @RequestParam(value = "page", required = false, defaultValue = "0") int page,
-        @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
-
-
-        List<GiftCertificate> certificates = giftCertificateService.search(tagNames, partNameOrDesc, sortTypes);
-
-
-        if (tagNames == null){
-            tagNames = new HashSet<>();
-        }
-
-        if (sortTypes == null){
-            sortTypes = new ArrayList<>();
-        }
-
-
+            @RequestParam(value = "partNameOrDesc", required = false, defaultValue = "") String partNameOrDesc,
+            @RequestParam(value = "sortTypes", required = false) List<String> sortTypes,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
         try {
-            //tags quantity
-            int tagsQuantity = certificates.size();
-
-            certificates.forEach(this::linkCertificate);
-
-            CollectionModel<GiftCertificate> model;
-
-            //paginate certificate list
-            if (size > 0) {
-                certificates = giftCertificateService.getPaginatedCertificateList(certificates, page, size);
-
-
-                 model = CollectionModel
-                        .of(certificates, linkTo(methodOn(GiftCertificateController.class)
-                                .getCertificates(tagNames, partNameOrDesc, sortTypes, page, size)).withSelfRel());
-
-
-                if (page > 0){
-                    int previousPage = page - 1;
-                    model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
-                            tagNames, partNameOrDesc, sortTypes, 0, size)).withRel("firstPage"));
-                    model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
-                            tagNames, partNameOrDesc, sortTypes, previousPage, size)).withRel("previousPage"));
-                }
-                // link to next pages
-                if (tagsQuantity > (page + 1) * size){
-                    // finding last page
-                    int lastPage = findLastPageNumber(tagsQuantity, size);
-                    model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
-                            tagNames, partNameOrDesc, sortTypes, page + 1, size)).withRel("nextPage"));
-                    model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
-                            tagNames, partNameOrDesc, sortTypes, lastPage, size)).withRel("lastPage"));
-                }
-            } else {
-                model = CollectionModel
-                        .of(certificates, linkTo(methodOn(GiftCertificateController.class)
-                                .getCertificates(tagNames, partNameOrDesc, sortTypes, 0, 0)).withSelfRel());
-            }
-
-            return model;
+            return searchCertificates(tagNames, sortTypes, packParameters(partNameOrDesc, page, size));
         } catch (IllegalArgumentException ex) {
             throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
         }
     }
 
+    private Object[] packParameters(Object... parameters) {
+        return parameters;
+    }
 
+    private CollectionModel<GiftCertificate> searchCertificates(Set<String> tagNames, List<String> sortTypes,
+                                                                Object[] parameters) {
+        tagNames = checkTagNames(tagNames);
+        sortTypes = checkSortTypes(sortTypes);
+        return getGiftCertificateCollectionModel(tagNames, sortTypes, parameters);
+    }
 
+    private Set<String> checkTagNames(Set<String> tagNames) {
+        return (tagNames == null) ? (new HashSet<>()) : (tagNames);
+    }
 
+    private List<String> checkSortTypes(List<String> sortTypes) {
+        return (sortTypes == null) ? (new ArrayList<>()) : (sortTypes);
+    }
 
+    private CollectionModel<GiftCertificate> getGiftCertificateCollectionModel(Set<String> tagNames,
+                                                                               List<String> sortTypes,
+                                                                               Object[] parameters) {
+        int size = (int) parameters[2];
+        if (size > 0) {
+            return getPaginatedCertificateCollectionModel(tagNames, sortTypes, parameters);
+        } else {
+            return getUnPaginatedCollectionModel(tagNames, sortTypes, parameters);
+        }
+    }
 
+    private CollectionModel<GiftCertificate> getPaginatedCertificateCollectionModel(Set<String> tagNames,
+                                                                                    List<String> sortTypes,
+                                                                                    Object[] parameters) {
+        CollectionModel<GiftCertificate> model;
+        String partNameOrDesc = (String) parameters[0];
+        int page = (int) parameters[1];
+        int size = (int) parameters[2];
+        List<GiftCertificate> certificates = giftCertificateService.search(tagNames, partNameOrDesc, sortTypes);
+        int certificatesQuantity = certificates.size();
+        linkCertificates(certificates);
+        certificates = giftCertificateService.getPaginatedCertificateList(certificates, page, size);
+        model = CollectionModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getCertificates(tagNames, partNameOrDesc, sortTypes, page, size)).withSelfRel());
+        linkModelToPreviousPages(tagNames, sortTypes, parameters, model);
+        linkModelToNextPages(tagNames, sortTypes, packParameters(partNameOrDesc, page, size, certificatesQuantity),
+                model);
+        return model;
+    }
 
+    private void linkModelToPreviousPages(Set<String> tagNames, List<String> sortTypes,
+                                          Object[] parameters, CollectionModel<GiftCertificate> model) {
+        String partNameOrDesc = (String) parameters[0];
+        int page = (int) parameters[1];
+        int size = (int) parameters[2];
+        if (page > 0) {
+            int previousPage = page - 1;
+            model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
+                    tagNames, partNameOrDesc, sortTypes, 0, size)).withRel("firstPage"));
+            model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
+                    tagNames, partNameOrDesc, sortTypes, previousPage, size)).withRel("previousPage"));
+        }
+    }
 
+    private void linkModelToNextPages(Set<String> tagNames, List<String> sortTypes,
+                                      Object[] parameters, CollectionModel<GiftCertificate> model) {
+        String partNameOrDesc = (String) parameters[0];
+        int page = (int) parameters[1];
+        int size = (int) parameters[2];
+        int certificatesQuantity = (int) parameters[3];
+        if (certificatesQuantity > (page + 1) * size) {
+            int lastPage = findLastPageNumber(certificatesQuantity, size);
+            model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
+                    tagNames, partNameOrDesc, sortTypes, page + 1, size)).withRel("nextPage"));
+            model.add(linkTo(methodOn(GiftCertificateController.class).getCertificates(
+                    tagNames, partNameOrDesc, sortTypes, lastPage, size)).withRel("lastPage"));
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    private CollectionModel<GiftCertificate> getUnPaginatedCollectionModel(Set<String> tagNames, List<String> sortTypes,
+                                                                           Object[] parameters) {
+        String partNameOrDesc = String.valueOf(parameters[0]);
+        List<GiftCertificate> certificates = giftCertificateService.search(tagNames, partNameOrDesc, sortTypes);
+        linkCertificates(certificates);
+        return CollectionModel.of(certificates, linkTo(methodOn(GiftCertificateController.class)
+                .getCertificates(tagNames, partNameOrDesc, sortTypes, 0, 0)).withSelfRel());
+    }
 
     @DeleteMapping("/giftCertificates")
     public void delete(@RequestBody GiftCertificate certificate) {
         giftCertificateService.delete(certificate);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//    @GetMapping("/giftCertificates/search")
-//    public CollectionModel<GiftCertificate> getCertificates(
-//            @RequestParam(value = "tagNames", required = false) Set<String> tagNames,
-//            @RequestParam(value = "partNameOrDesc", required = false, defaultValue = "") String partNameOrDesc,
-//            @RequestParam(value = "sortTypes", required = false) List<String> sortTypes,
-//            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
-//            @RequestParam(value = "size", required = false, defaultValue = "0") int size) {
-//
-//
-//        List<GiftCertificate> certificates = giftCertificateService.search(tagNames, partNameOrDesc, sortTypes);
-//
-//        try {
-//            return size > 0 ? getPaginatedCertificateModel(certificates, page, size) :
-//                    getGiftCertificateCollectionModel(certificates, page, size);
-//        } catch (IllegalArgumentException ex) {
-//            throw new LocalizedControllerException("exception.message.40004", 40004, HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//
-//    private CollectionModel<GiftCertificate> getPaginatedCertificateModel(List<GiftCertificate> certificates,
-//                                                                          int page, int size) {
-//        certificates = giftCertificateService.getPaginatedCertificateList(certificates, page, size);
-//        return getGiftCertificateCollectionModel(certificates, page, size);
-//    }
-
-

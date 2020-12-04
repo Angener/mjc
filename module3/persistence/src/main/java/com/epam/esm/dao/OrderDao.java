@@ -17,4 +17,6 @@ public interface OrderDao {
     MostWidelyUsedTag getMostWidelyUsedTag(int userId);
 
     long getOrdersQuantity();
+
+    long getOrdersQuantity(int userId);
 }

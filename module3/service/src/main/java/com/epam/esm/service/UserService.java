@@ -10,4 +10,6 @@ public interface UserService {
     List<User> getAll(int page, int recordsPerPage);
 
     User getById(int id);
+
+    long getUsersQuantity();
 }

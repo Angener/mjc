@@ -31,7 +31,7 @@ import java.util.Set;
         classes = {
                 @ConstructorResult(targetClass = MostWidelyUsedTag.class,
                         columns = {
-                                @ColumnResult(name = "tag_id", type = long.class),
+                                @ColumnResult(name = "tag_id", type = int.class),
                                 @ColumnResult(name = "tag_name", type = String.class),
                                 @ColumnResult(name = "highest_cost", type = BigDecimal.class)
                         })})

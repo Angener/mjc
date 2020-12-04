@@ -67,4 +67,11 @@ public class OrderDaoImpl implements OrderDao {
     public long getOrdersQuantity() {
         return (long) entityManager.createQuery("SELECT COUNT(*) FROM Order").getSingleResult();
     }
+
+    @Override
+    public long getOrdersQuantity(int userId) {
+        return (long) entityManager.createQuery("SELECT COUNT(*) FROM Order o JOIN o.user u WHERE u.id = :id")
+                .setParameter("id", userId)
+                .getSingleResult();
+    }
 }

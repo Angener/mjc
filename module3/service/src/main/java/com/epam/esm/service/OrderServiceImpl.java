@@ -81,4 +81,10 @@ public class OrderServiceImpl implements OrderService {
     public MostWidelyUsedTag getMostWidelyUsedTag(int userId) {
         return orderDao.getMostWidelyUsedTag(userId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getOrdersQuantity(int userId) {
+        return orderDao.getOrdersQuantity(userId);
+    }
 }
