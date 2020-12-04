@@ -1,6 +1,6 @@
 package com.epam.esm.dao;
 
-import com.epam.esm.config.JdbcConfig;
+import com.epam.esm.config.Config;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +10,9 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.sql.SQLException;
 
-@SpringJUnitWebConfig(JdbcConfig.class)
+@SpringJUnitWebConfig(Config.class)
 @ContextConfiguration(
-        classes = {JdbcConfig.class},
+        classes = {Config.class},
         loader = AnnotationConfigContextLoader.class)
 public class InMemoryDbConfig {
     private static final String CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS tag (" +

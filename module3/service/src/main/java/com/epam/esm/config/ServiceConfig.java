@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
-@Import(JdbcConfig.class)
+@Import(Config.class)
 @ComponentScan(basePackages = {"com.epam.esm.service"})
 @EnableTransactionManagement
 public class ServiceConfig {
