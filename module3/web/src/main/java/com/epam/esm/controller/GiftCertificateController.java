@@ -56,7 +56,7 @@ public class GiftCertificateController {
     public GiftCertificate update(@RequestBody GiftCertificate certificate) {
         try {
             return giftCertificateService.update(certificate);
-        } catch (DuplicateKeyException ex) {
+        } catch (DataIntegrityViolationException ex) {
             throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         }
     }

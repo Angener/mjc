@@ -49,6 +49,12 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public User save(User user) {
+        entityManager.persist(user);
+        return user;
+    }
+
+    @Override
     public long getUsersQuantity() {
         return (long) entityManager.createQuery("SELECT COUNT(*) FROM User").getSingleResult();
     }

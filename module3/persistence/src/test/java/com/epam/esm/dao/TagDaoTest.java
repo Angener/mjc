@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -39,13 +41,13 @@ public class TagDaoTest extends InMemoryDbConfig {
     @Test
     public void getByName() {
         assertEquals(1, dao.getByName("first tag").getId());
-        assertThrows(NoResultException.class, () -> dao.getByName("ninth tag"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("ninth tag"));
     }
 
     @Test
     public void getById() {
         assertEquals(1, dao.getById(1).getId());
-        assertThrows(NoResultException.class, () -> dao.getByName("ninth tag"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("ninth tag"));
     }
 
     @Test
@@ -62,8 +64,8 @@ public class TagDaoTest extends InMemoryDbConfig {
 
         assertEquals(3, dao.getAll().size());
         assertEquals(tag, dao.getById(3));
-        assertThrows(PersistenceException.class, () -> dao.save(new Tag()));
-        assertThrows(PersistenceException.class, () -> dao.save(new Tag("third tag")));
+        assertThrows(DataIntegrityViolationException.class, () -> dao.save(new Tag()));
+        assertThrows(DataIntegrityViolationException.class, () -> dao.save(new Tag("third tag")));
     }
 
     @Test

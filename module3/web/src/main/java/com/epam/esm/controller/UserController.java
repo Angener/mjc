@@ -210,7 +210,9 @@ public class UserController {
     @GetMapping("/bestUserOrderTag/{userId}")
     public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable int userId) {
         try {
-            return orderService.getMostWidelyUsedTag(userId);
+            MostWidelyUsedTag tag = orderService.getMostWidelyUsedTag(userId);
+            tag.add(linkTo(methodOn(TagController.class).get(tag.getMostWidelyUsedTag().getId())).withRel("Tag"));
+            return tag;
         } catch (NoResultException ex) {
             throw new LocalizedControllerException("exception.message.40406", 40406, HttpStatus.NOT_FOUND);
         }

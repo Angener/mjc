@@ -1,7 +1,6 @@
 package com.epam.esm.service;
 
 import com.epam.esm.dao.UserDao;
-import com.epam.esm.entity.Tag;
 import com.epam.esm.entity.User;
 import com.google.common.base.Preconditions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +56,12 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public User getById(int id) {
         return dao.getById(id);
+    }
+
+    @Override
+    @Transactional
+    public User save(User user) {
+        return dao.save(user);
     }
 
     @Override

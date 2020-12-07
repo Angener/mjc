@@ -1,19 +1,14 @@
 package com.epam.esm.dao;
 
 import com.epam.esm.config.Config;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.sql.SQLException;
 
-@SpringJUnitWebConfig(Config.class)
-@ContextConfiguration(
-        classes = {Config.class},
-        loader = AnnotationConfigContextLoader.class)
+@SpringBootTest(classes = Config.class)
 public class InMemoryDbConfig {
     private static final String CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS tag (" +
             "id BIGSERIAL PRIMARY KEY NOT NULL, " +

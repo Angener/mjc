@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import javax.persistence.NoResultException;
 import java.sql.SQLException;
@@ -34,12 +35,12 @@ public class UserDaoTest extends InMemoryDbConfig {
     @Test
     public void getByName() {
         assertEquals(1, dao.getByName("user1").getId());
-        assertThrows(NoResultException.class, () -> dao.getByName("any user"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("any user"));
     }
 
     @Test
     public void getById() {
         assertEquals(1, dao.getById(1).getId());
-        assertThrows(NoResultException.class, () -> dao.getByName("any user"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("any user"));
     }
 }

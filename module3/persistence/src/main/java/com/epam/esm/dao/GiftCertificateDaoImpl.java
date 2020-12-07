@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GiftCertificateDaoImpl implements GiftCertificateDao {
     static final String SORTING_ORDER = " ASC";
-    static final String CONDITIONS_TYPE = " AND ";
     static final String SEARCHABLE_COLUMN = "name";
     static List<String> SORTABLE_TABLE_FIELDS = Arrays.asList("name", "createDate");
 
@@ -97,9 +96,13 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     @SuppressWarnings("all")
     public List<GiftCertificate> getByTagName(List<String> sortTypes, Set<String> names) {
-        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name ${conditions} ${value}";
+        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name ${conditions} " +
+                "GROUP BY c.id " +
+                "HAVING COUNT(c) >= :count " +
+                "${value}";
         Query query = entityManager
-                .createQuery(substituteJpqlQueryVariable(defineConditions(names), defineSortType(sortTypes), jpql));
+                .createQuery(substituteJpqlQueryVariable(defineConditions(names), defineSortType(sortTypes), jpql))
+                .setParameter("count", (long) names.size());
         setQueryParameters(query, names);
         return query.getResultList();
     }
@@ -116,7 +119,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String produceConditions(Set<String> conditions) {
-        return String.join(CONDITIONS_TYPE.concat("t.").concat(SEARCHABLE_COLUMN), conditions);
+        return String.join(" OR ".concat("t.").concat(SEARCHABLE_COLUMN), conditions);
     }
 
     private String substituteJpqlQueryVariable(String conditions, String sortTypes, String source) {

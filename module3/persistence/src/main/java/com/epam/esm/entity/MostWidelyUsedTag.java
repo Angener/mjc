@@ -1,12 +1,13 @@
 package com.epam.esm.entity;
 
 import lombok.Data;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
-public class MostWidelyUsedTag implements Serializable {
+public class MostWidelyUsedTag extends RepresentationModel<MostWidelyUsedTag> implements Serializable {
     private static final long serialVersionUID = 1L;
     private final Tag mostWidelyUsedTag;
     private final BigDecimal highestCost;

@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceException;
@@ -62,9 +64,9 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         GiftCertificate savedCertificate = dao.save(certificate);
         assertEquals(savedCertificate, dao.getById(6));
         certificate.setName(null);
-        assertThrows(PersistenceException.class, () -> dao.save(certificate));
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> dao.save(certificate));
         certificate.setName("first");
-        assertThrows(PersistenceException.class, () -> dao.save(certificate));
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> dao.save(certificate));
     }
 
     @Test
@@ -79,7 +81,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),
                 testableCertificate.getLastUpdateDate().format(DateTimeFormatter.ISO_DATE));
         assertEquals(12, testableCertificate.getDuration());
-        assertThrows(NoResultException.class, () -> dao.getByName("no name"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("no name"));
     }
 
     @Test
@@ -133,7 +135,7 @@ public class GiftCertificateTest extends InMemoryDbConfig {
                 testableCertificate.getCreateDate().format(DateTimeFormatter.ISO_DATE));
         assertEquals(ZonedDateTime.now(ZoneId.of("GMT+3")).format(DateTimeFormatter.ISO_DATE),
                 testableCertificate.getLastUpdateDate().format(DateTimeFormatter.ISO_DATE));
-        assertThrows(NoResultException.class, () -> dao.getByName("first"));
+        assertThrows(EmptyResultDataAccessException.class, () -> dao.getByName("first"));
         assertThrows(DataIntegrityViolationException.class, () -> dao.update(certificate));
     }
 
