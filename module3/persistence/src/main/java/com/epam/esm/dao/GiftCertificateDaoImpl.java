@@ -96,7 +96,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     @Override
     @SuppressWarnings("all")
     public List<GiftCertificate> getByTagName(List<String> sortTypes, Set<String> names) {
-        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags t WHERE t.name ${conditions} " +
+        String jpql = "SELECT c FROM GiftCertificate c JOIN c.tags tag WHERE tag.name ${conditions} " +
                 "GROUP BY c.id " +
                 "HAVING COUNT(c) >= :count " +
                 "${value}";
@@ -119,7 +119,7 @@ public class GiftCertificateDaoImpl implements GiftCertificateDao {
     }
 
     private String produceConditions(Set<String> conditions) {
-        return String.join(" OR ".concat("t.").concat(SEARCHABLE_COLUMN), conditions);
+        return String.join(" OR ".concat("tag.").concat(SEARCHABLE_COLUMN), conditions);
     }
 
     private String substituteJpqlQueryVariable(String conditions, String sortTypes, String source) {
