@@ -1,8 +1,12 @@
 package com.epam.esm.service;
 
-import com.epam.esm.dao.GiftCertificateDaoImpl;
+import com.epam.esm.repository.GiftCertificateMapper;
+import com.epam.esm.repository.GiftCertificateRepository;
+import com.epam.esm.repository.TagRepository;
 import com.epam.esm.entity.GiftCertificate;
+import com.epam.esm.entity.dto.GiftCertificateDto;
 import com.epam.esm.entity.Tag;
+import com.epam.esm.service.giftCertificate.GiftCertificateServiceImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,23 +18,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @ExtendWith(MockitoExtension.class)
 public class GiftCertificateServiceImplTest {
     static final String PART_NAME = "partName";
-    static final Set<String> TAG_NAME = Collections.singleton("tagName");
     static Set<Tag> tags;
-    static List<String> tagNames;
+    static Set<String> tagNames;
     static List<GiftCertificate> certificates;
     static GiftCertificate certificate;
     @Mock
-    GiftCertificateDaoImpl dao;
+    GiftCertificateRepository repository;
+    @Mock
+    TagRepository tagRepository;
+    @Mock
+    GiftCertificateMapper mapper;
     @InjectMocks
     GiftCertificateServiceImpl service;
 
@@ -49,7 +58,7 @@ public class GiftCertificateServiceImplTest {
     private static void initTagNames() {
         tagNames = tags.stream()
                 .map(Tag::getName)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @BeforeEach
@@ -72,90 +81,76 @@ public class GiftCertificateServiceImplTest {
 
     @Test
     public void save() {
-        when(dao.save(any())).thenReturn(certificate);
+        when(repository.save(any())).thenReturn(certificate);
 
         assertEquals(certificate, service.save(certificate));
-        verify(dao).save(certificate);
-        verifyNoMoreInteractions(dao);
+        verify(repository).save(certificate);
+        verifyNoMoreInteractions(repository);
     }
 
     @Test
-    public void update() {
-        when(dao.update(any())).thenReturn(certificate);
+    public void updateWhenTagsWasPassed() {
+        GiftCertificateDto dto = new GiftCertificateDto();
+        dto.setTags(tags);
+        when(repository.getOne(anyInt())).thenReturn(certificate);
+        when(repository.save(any())).thenReturn(certificate);
 
-        assertEquals(service.update(certificate), certificate);
-        verify(dao).update(certificate);
-        verifyNoMoreInteractions(dao);
+        assertEquals(service.update(dto), certificate);
+        verify(repository).getOne(anyInt());
+        verify(tagRepository, times(2)).existsTagByName(anyString());
+        verify(tagRepository, times(2)).save(any(Tag.class));
+        verify(repository).save(certificate);
+        verifyNoMoreInteractions(repository);
     }
 
+    @Test
+    public void updateWhenTagsWasNotPassed() {
+        GiftCertificateDto dto = new GiftCertificateDto();
+        when(repository.getOne(anyInt())).thenReturn(certificate);
+        when(repository.save(any())).thenReturn(certificate);
+
+        assertEquals(service.update(dto), certificate);
+        verifyNoInteractions(tagRepository);
+        verify(repository).getOne(anyInt());
+        verify(repository).save(certificate);
+        verifyNoMoreInteractions(repository);
+    }
 
     @Test
     public void searchByTagNameAndPartName() {
-        when(dao.searchByTagAndPartNameOrDescription(tagNames, TAG_NAME, PART_NAME)).thenReturn(certificates);
-
-        assertEquals(certificates, service.search(TAG_NAME, PART_NAME, tagNames));
-        verify(dao).searchByTagAndPartNameOrDescription(tagNames, TAG_NAME, PART_NAME);
+        service.search(tagNames, PART_NAME, Pageable.unpaged());
+        verify(repository).findByTagAndPartNameOrDescription(tagNames, tagNames.size(), PART_NAME, Pageable.unpaged());
     }
 
     @Test
     public void searchByTagOnly() {
-        when(dao.getByTagName(tagNames, TAG_NAME)).thenReturn(certificates);
-
-        assertEquals(certificates, service.search(TAG_NAME, null, tagNames));
-        verify(dao).getByTagName(tagNames, TAG_NAME);
+        service.search(tagNames, null, Pageable.unpaged());
+        verify(repository).findByTagName(tagNames, tagNames.size(), Pageable.unpaged());
     }
 
     @Test
     public void searchByPartNameOnly() {
-        when(dao.searchByPartNameOrDescription(tagNames, PART_NAME)).thenReturn(certificates);
-        service.search(null, PART_NAME, tagNames);
-
-        verify(dao).searchByPartNameOrDescription(tagNames, PART_NAME);
+        service.search(null, PART_NAME, Pageable.unpaged());
+        verify(repository).findDistinctByNameLikeOrDescriptionLike(PART_NAME, Pageable.unpaged());
     }
 
     @Test
-    public void getAll() {
-        when(dao.getAll()).thenReturn(certificates);
-
-        assertEquals(certificates, service.getAll());
-        verify(dao).getAll();
+    public void findAll() {
+        service.findAll(Pageable.unpaged());
+        verify(repository).findAll(Pageable.unpaged());
     }
 
     @Test
-    public void getById() {
-        when(dao.getById(anyInt())).thenReturn(certificates.get(0));
+    public void findById() {
+        when(repository.findById(anyInt())).thenReturn(Optional.of(certificates.get(0)));
 
-        assertEquals(certificates.get(0), service.getById(anyInt()));
-        verify(dao).getById(anyInt());
-    }
-
-    @Test
-    public void getByName() {
-        when(dao.getByName(anyString())).thenReturn(certificates.get(0));
-
-        assertEquals(certificates.get(0), service.search(anyString()));
-        verify(dao).getByName(anyString());
-    }
-
-    @Test
-    public void getByTagName() {
-        when(dao.getByTagName(null, TAG_NAME)).thenReturn(certificates);
-
-        assertEquals(certificates, service.getByTagName(TAG_NAME));
-        verify(dao).getByTagName(null, TAG_NAME);
-    }
-
-    @Test
-    public void searchByPartNameOrDescription() {
-        when(dao.searchByPartNameOrDescription(null, PART_NAME)).thenReturn(certificates);
-
-        assertEquals(certificates, service.searchByPartNameOrDescription(PART_NAME));
-        verify(dao).searchByPartNameOrDescription(null, PART_NAME);
+        assertEquals(Optional.of(certificates.get(0)), service.findById(anyInt()));
+        verify(repository).findById(anyInt());
     }
 
     @Test
     public void delete() {
         service.delete(certificate);
-        verify(dao).delete(certificate);
+        verify(repository).delete(certificate);
     }
 }

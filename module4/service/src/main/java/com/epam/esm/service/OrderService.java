@@ -3,19 +3,15 @@ package com.epam.esm.service;
 import com.epam.esm.entity.MostWidelyUsedTag;
 import com.epam.esm.entity.Order;
 import com.epam.esm.entity.OrderDetail;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
-    Order createOrder(Order order);
+    Order save(Order order);
 
-    List<Order> getUserOrders(int userId);
+    Page<Order> findUserOrders(int userId, Pageable pageable);
 
-    List<Order> getUserOrders(int userId, int page, int recordsPerPage);
+    OrderDetail find(int userId, int orderId);
 
-    OrderDetail get(int userId, int orderId);
-
-    MostWidelyUsedTag getMostWidelyUsedTag(int userId);
-
-    long getOrdersQuantity(int userId);
+    MostWidelyUsedTag findMostWidelyUsedTag(int userId);
 }

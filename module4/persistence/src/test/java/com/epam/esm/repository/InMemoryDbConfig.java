@@ -1,4 +1,4 @@
-package com.epam.esm.dao;
+package com.epam.esm.repository;
 
 import com.epam.esm.config.Config;
 import org.springframework.boot.test.context.SpringBootTest;

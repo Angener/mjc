@@ -1,34 +1,25 @@
 package com.epam.esm.service;
 
 import com.epam.esm.entity.GiftCertificate;
+import com.epam.esm.entity.dto.GiftCertificateDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface GiftCertificateService {
     GiftCertificate save(GiftCertificate certificate);
 
-    List<GiftCertificate> getAll();
+    Page<GiftCertificate> findAll(Pageable pageable);
 
-    List<GiftCertificate> getAll(int page, int recordsPerPage);
+    Page<GiftCertificate> search(@Nullable Set<String> tagNames, @Nullable String partOfNameOrDesc,
+                                 @Nullable Pageable pageable);
 
-    List<GiftCertificate> search(@Nullable Set<String> tagNames, @Nullable String partOfNameOrDesc,
-                                 @Nullable List<String> sortTypes);
+    Optional<GiftCertificate> findById(int id);
 
-    GiftCertificate getById(int id);
-
-    GiftCertificate search(String certificateName);
-
-    List<GiftCertificate> getByTagName(Set<String> tagNames);
-
-    List<GiftCertificate> searchByPartNameOrDescription(String partName);
-
-    List<GiftCertificate> getPaginatedCertificateList(List<GiftCertificate> certificates, int page, int recordsPerPage);
-
-    GiftCertificate update(GiftCertificate certificate);
+    GiftCertificate update(GiftCertificateDto dto);
 
     void delete(GiftCertificate certificate);
-
-    long getGiftCertificatesQuantity();
 }

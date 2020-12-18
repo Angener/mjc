@@ -12,6 +12,7 @@ import com.github.javafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,7 +50,7 @@ public class ContentLoaderController {
 
     private void loadUsers() {
         Faker faker = new Faker();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
                 userService.save(new User(faker.name().fullName()));
                 LOGGER.info(i + " user created");
@@ -61,7 +62,7 @@ public class ContentLoaderController {
 
     private void loadTags() {
         Faker faker = new Faker();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
                 tagService.save(new Tag(faker.commerce().productName()));
                 LOGGER.info(i + " tag created");
@@ -73,9 +74,9 @@ public class ContentLoaderController {
 
     private void loadCertificates() {
         Faker faker = new Faker();
-        List<Tag> tags = tagService.getAll();
+        List<Tag> tags = tagService.findAll(PageRequest.of(0, 100)).toList();
 
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 50; i++) {
             try {
                 saveCertificate(tags, faker);
                 LOGGER.info(i + " certificate created");
@@ -99,20 +100,20 @@ public class ContentLoaderController {
     private Set<Tag> getRandomTagSet(List<Tag> tags, int maxQuantity, Faker faker) {
         Set<Tag> result = new HashSet<>();
         for (int i = 0; i < maxQuantity; i++) {
-            result.add(tags.get(faker.number().numberBetween(0, 999)));
+            result.add(tags.get(faker.number().numberBetween(0, 9)));
         }
         return result;
     }
 
     private void buyEachCertificate() {
         Faker faker = new Faker();
-        List<GiftCertificate> certificates = giftCertificateService.getAll();
-        List<User> users = userService.getAll();
+        List<GiftCertificate> certificates = giftCertificateService.findAll(PageRequest.of(0, 100)).toList();
+        List<User> users = userService.findAll(PageRequest.of(0, 100)).toList();
         certificates.parallelStream().forEach(certificate -> {
             Order order = new Order();
             order.setCertificate(certificate);
             order.setUser(users.get(faker.number().numberBetween(0, users.size())));
-            order = orderService.createOrder(order);
+            order = orderService.save(order);
             LOGGER.info(order.getId() + " order created");
         });
     }

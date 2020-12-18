@@ -6,20 +6,16 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.hateoas.RepresentationModel;
+import lombok.ToString;
 
 import javax.persistence.Column;
-import javax.persistence.ColumnResult;
-import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.SqlResultSetMapping;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -27,24 +23,18 @@ import java.util.Set;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @EqualsAndHashCode(exclude = {"id", "giftCertificates"}, callSuper = false)
-@SqlResultSetMapping(name = "mostWidelyUsedTagMapper",
-        classes = {
-                @ConstructorResult(targetClass = MostWidelyUsedTag.class,
-                        columns = {
-                                @ColumnResult(name = "tag_id", type = int.class),
-                                @ColumnResult(name = "tag_name", type = String.class),
-                                @ColumnResult(name = "highest_cost", type = BigDecimal.class)
-                        })})
-public class Tag extends RepresentationModel<Tag> implements Serializable {
+public class Tag implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false)
     private int id;
     @Column(nullable = false, unique = true)
     @NonNull
     private String name;
     @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
     @JsonIgnore
+    @ToString.Exclude
     private Set<GiftCertificate> giftCertificates;
 
     public Tag(int id, @NonNull String name) {

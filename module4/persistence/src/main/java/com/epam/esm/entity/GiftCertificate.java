@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,7 +31,7 @@ import java.util.Set;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(exclude = "tags", callSuper = false)
-public class GiftCertificate extends RepresentationModel<GiftCertificate> implements Serializable {
+public class GiftCertificate implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +53,7 @@ public class GiftCertificate extends RepresentationModel<GiftCertificate> implem
             joinColumns = {@JoinColumn(name = "gift_certificate_id")},
             inverseJoinColumns = {@JoinColumn(name = "tag_id")}
     )
+    @ToString.Exclude
     Set<Tag> tags;
 
     public GiftCertificate(int id, String name, String description, BigDecimal price,

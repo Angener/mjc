@@ -30,6 +30,8 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.11.3'
     compile 'com.github.javafaker:javafaker:1.0.2'
     compileOnly 'org.projectlombok:lombok:1.18.16'
+    compile 'org.mapstruct:mapstruct:1.4.1.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
     annotationProcessor 'org.projectlombok:lombok:1.18.16'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

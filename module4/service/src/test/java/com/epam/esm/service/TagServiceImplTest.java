@@ -1,28 +1,33 @@
 package com.epam.esm.service;
 
-import com.epam.esm.dao.TagDaoImpl;
-import com.epam.esm.entity.GiftCertificate;
+import com.epam.esm.repository.TagRepository;
 import com.epam.esm.entity.Tag;
+import com.epam.esm.service.tag.TagServiceImpl;
 import org.junit.jupiter.api.BeforeAll;
+
 import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class TagServiceImplTest {
     private static List<Tag> tags;
+    private static Page<Tag> tagPage;
 
     @Mock
-    private TagDaoImpl dao;
+    private TagRepository repository;
 
     @InjectMocks
     private TagServiceImpl service;
@@ -30,58 +35,34 @@ public class TagServiceImplTest {
     @BeforeAll
     public static void init() {
         tags = Arrays.asList(new Tag(1, "first"), new Tag(2, "second"));
+        tagPage = new PageImpl<>(tags);
     }
 
     @Test
-    public void getAll() {
-        when(dao.getAll()).thenReturn(tags);
+    public void findAll() {
+        when(repository.findAll(Pageable.unpaged())).thenReturn(tagPage);
 
-        assertEquals(service.getAll(), tags);
-        verify(dao).getAll();
-        verifyNoMoreInteractions(dao);
+        assertEquals(service.findAll(Pageable.unpaged()), tagPage);
+        verify(repository).findAll(Pageable.unpaged());
     }
 
     @Test
-    public void getAllGiftCertificateTags() {
-        when(dao.getAllGiftCertificateTags(any(GiftCertificate.class))).thenReturn(tags);
+    public void findById() {
+        when(repository.findById(anyInt())).thenReturn(Optional.of(tags.get(0)));
 
-        assertEquals(tags, service.getAllGiftCertificateTags(new GiftCertificate()));
-        verify(dao).getAllGiftCertificateTags(new GiftCertificate());
-        verifyNoMoreInteractions(dao);
-    }
-
-    @Test
-    public void getById() {
-        when(dao.getById(anyInt())).thenReturn(tags.get(0));
-
-        assertEquals(tags.get(0), service.getById(anyInt()));
-        verify(dao).getById(anyInt());
-        verifyNoMoreInteractions(dao);
-    }
-
-    @Test
-    public void getByName() {
-        when(dao.getByName(anyString())).thenReturn(tags.get(0));
-
-        assertEquals(tags.get(0), service.get(anyString()));
-        verify(dao).getByName(anyString());
-        verifyNoMoreInteractions(dao);
+        assertEquals(Optional.of(tags.get(0)), service.findById(anyInt()));
+        verify(repository).findById(anyInt());
     }
 
     @Test
     public void save() {
-        when(dao.save(any(Tag.class))).thenReturn(any(Tag.class));
         service.save(new Tag());
-
-        verify(dao).save(new Tag());
-        verifyNoMoreInteractions(dao);
+        verify(repository).save(new Tag());
     }
 
     @Test
     public void delete() {
         service.delete(new Tag());
-
-        verify(dao).delete(new Tag());
-        verifyNoMoreInteractions(dao);
+        verify(repository).delete(new Tag());
     }
 }

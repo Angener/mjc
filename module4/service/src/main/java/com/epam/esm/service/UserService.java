@@ -1,17 +1,15 @@
 package com.epam.esm.service;
 
 import com.epam.esm.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
-    List<User> getAll();
+    Page<User> findAll(Pageable pageable);
 
-    List<User> getAll(int page, int recordsPerPage);
-
-    User getById(int id);
+    Optional<User> findById(int id);
 
     User save(User user);
-
-    long getUsersQuantity();
 }

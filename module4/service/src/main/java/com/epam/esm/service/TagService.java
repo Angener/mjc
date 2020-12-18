@@ -1,24 +1,17 @@
 package com.epam.esm.service;
 
-import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface TagService {
-    List<Tag> getAll();
+    Page<Tag> findAll(Pageable pageable);
 
-    List<Tag> getAll(int page, int recordsPerPage);
-
-    List<Tag> getAllGiftCertificateTags(GiftCertificate giftCertificate);
-
-    Tag getById(int id);
-
-    Tag get(String name);
+    Optional<Tag> findById(int id);
 
     Tag save(Tag tag);
 
     void delete(Tag tag);
-
-    long getTagsQuantity();
 }
