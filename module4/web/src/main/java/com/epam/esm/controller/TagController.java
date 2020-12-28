@@ -13,6 +13,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.persistence.PersistenceException;
 
 @RestController
 public class TagController extends RepresentationModel<TagController> {
@@ -58,17 +57,17 @@ public class TagController extends RepresentationModel<TagController> {
 
     @PostMapping("/tags")
     @ResponseStatus(HttpStatus.CREATED)
+    @Secured("ROLE_ADMIN")
     public Tag save(@RequestBody Tag tag) {
         try {
             return tagService.save(tag);
-        } catch (PersistenceException ex) {
-            throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException ex) {
-            throw new LocalizedControllerException("exception.message.40001", 40001, HttpStatus.BAD_REQUEST);
+            throw new LocalizedControllerException("exception.message.40002", 40002, HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping("/tags")
+    @Secured("ROLE_ADMIN")
     public void delete(@RequestBody Tag tag) {
         tagService.delete(tag);
     }

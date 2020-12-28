@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -33,6 +35,18 @@ public class GlobalExceptionControllerAdviser extends ResponseEntityExceptionHan
 
     private String resolveResourceBundle(Exception ex, Locale locale) {
         return messageSource.getMessage(ex.getMessage(), null, locale);
+    }
+
+    @ExceptionHandler({AccessDeniedException.class, AuthenticationException.class})
+    public ResponseEntity<Object> handleException(WebRequest request) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("errorMessage", resolveResourceBundle("exception.message.40301", request.getLocale()));
+        parameters.put("errorCode", 40301);
+        return new ResponseEntity<>(parameters, HttpStatus.UNAUTHORIZED);
+    }
+
+    private String resolveResourceBundle(String message, Locale locale) {
+        return messageSource.getMessage(message, null, locale);
     }
 
     @ExceptionHandler({RuntimeException.class})

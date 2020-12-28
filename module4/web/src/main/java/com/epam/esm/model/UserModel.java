@@ -1,5 +1,6 @@
 package com.epam.esm.model;
 
+import com.epam.esm.entity.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
+
+import java.util.Set;
 
 @Data
 @Builder
@@ -19,4 +22,5 @@ import org.springframework.hateoas.server.core.Relation;
 public class UserModel extends RepresentationModel<UserModel> {
     private int id;
     private String name;
+    private Set<Role> roles;
 }

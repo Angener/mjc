@@ -20,6 +20,8 @@ dependencyManagement {
 
 dependencies {
     compile 'com.google.guava:guava:30.0-jre'
+    compile 'io.jsonwebtoken:jjwt:0.9.1'
+    compile 'org.springframework.boot:spring-boot-starter-security'
     compileOnly 'org.projectlombok:lombok:1.18.16'
     annotationProcessor 'org.projectlombok:lombok:1.18.16'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

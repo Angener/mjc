@@ -2,10 +2,12 @@ package com.epam.esm.controller;
 
 import com.epam.esm.entity.GiftCertificate;
 import com.epam.esm.entity.Order;
+import com.epam.esm.entity.Role;
 import com.epam.esm.entity.Tag;
 import com.epam.esm.entity.User;
 import com.epam.esm.service.GiftCertificateService;
 import com.epam.esm.service.OrderService;
+import com.epam.esm.service.RoleService;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.UserService;
 import com.github.javafaker.Faker;
@@ -29,18 +31,21 @@ public class ContentLoaderController {
     GiftCertificateService giftCertificateService;
     UserService userService;
     OrderService orderService;
+    RoleService roleService;
 
     @Autowired
     public ContentLoaderController(TagService tagService, GiftCertificateService giftCertificateService,
-                                   UserService userService, OrderService orderService) {
+                                   UserService userService, OrderService orderService, RoleService roleService) {
         this.tagService = tagService;
         this.giftCertificateService = giftCertificateService;
         this.userService = userService;
         this.orderService = orderService;
+        this.roleService = roleService;
     }
 
     @GetMapping("/loadContext")
     public String loadContext() {
+        loadRoles();
         loadUsers();
         loadTags();
         loadCertificates();
@@ -48,11 +53,23 @@ public class ContentLoaderController {
         return "Uploaded";
     }
 
+    private void loadRoles(){
+        Role user = new Role();
+        user.setName("ROLE_USER");
+        Role admin = new Role();
+        admin.setName("ROLE_ADMIN");
+        roleService.save(user);
+        roleService.save(admin);
+    }
+
     private void loadUsers() {
         Faker faker = new Faker();
         for (int i = 0; i < 10; i++) {
             try {
-                userService.save(new User(faker.name().fullName()));
+                User user = new User();
+                user.setName(faker.name().fullName());
+                user.setPassword("test");
+                userService.save(user);
                 LOGGER.info(i + " user created");
             } catch (Exception ex) {
                 i--;

@@ -34,6 +34,7 @@ public class UserModelAssembler extends RepresentationModelAssemblerSupport<User
 
         userModel.setId(user.getId());
         userModel.setName(user.getName());
+        userModel.setRoles(user.getRoles());
 
         return userModel;
     }
