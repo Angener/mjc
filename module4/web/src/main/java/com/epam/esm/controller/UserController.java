@@ -9,6 +9,7 @@ import com.epam.esm.entity.User;
 import com.epam.esm.exception.LocalizedControllerException;
 import com.epam.esm.model.OrderModel;
 import com.epam.esm.model.UserModel;
+import com.epam.esm.security.jwt.JwtUser;
 import com.epam.esm.service.OrderService;
 import com.epam.esm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,6 +56,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/users")
+    @Secured("ROLE_ADMIN")
     public PagedModel<UserModel> findAll(Pageable pageable) {
         try {
             return userPagedResourcesAssembler.toModel(userService.findAll(pageable), userModelAssembler);
@@ -63,20 +68,24 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public UserModel findById(@PathVariable int id) {
+    public UserModel findById(@PathVariable int id, Authentication authentication) {
+        verifyPrinciplePermissions(authentication, id);
         return userModelAssembler.toModel(userService.findById(id).orElseThrow(() ->
                 new LocalizedControllerException("exception.message.40403", 40403, HttpStatus.NOT_FOUND)));
     }
 
-    @PostMapping("/users/{id}/orders")
+    @PostMapping("/users/orders")
     @ResponseStatus(HttpStatus.CREATED)
-    public Order createOrder(@RequestBody Order order) {
+    public Order createOrder(@RequestBody Order order, Authentication authentication) {
+        verifyPrinciplePermissions(authentication, order.getUser().getId());
         return orderService.save(order);
     }
 
     @GetMapping("/users/{userId}/orders")
-    public PagedModel<OrderModel> getUserOrders(@PathVariable int userId, Pageable pageable) {
+    public PagedModel<OrderModel> getUserOrders(@PathVariable int userId, Pageable pageable,
+                                                Authentication authentication) {
         try {
+            verifyPrinciplePermissions(authentication, userId);
             return orderPagedResourcesAssembler.toModel(orderService.findUserOrders(userId, pageable),
                     orderModelAssembler);
         } catch (NoResultException ex) {
@@ -87,8 +96,10 @@ public class UserController {
     }
 
     @GetMapping("/users/{userId}/orders/{orderId}")
-    public OrderDetail getUserOrder(@PathVariable int userId, @PathVariable int orderId) {
+    public OrderDetail getUserOrder(@PathVariable int userId, @PathVariable int orderId,
+                                    Authentication authentication) {
         try {
+            verifyPrinciplePermissions(authentication, userId);
             return orderService.find(userId, orderId);
         } catch (NoResultException ex) {
             throw new LocalizedControllerException("exception.message.40404", 40404, HttpStatus.NOT_FOUND);
@@ -96,13 +107,23 @@ public class UserController {
     }
 
     @GetMapping("/bestUserOrderTag/{userId}")
-    public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable int userId) {
+    public MostWidelyUsedTag getMostWidelyUsedTag(@PathVariable int userId, Authentication authentication) {
         try {
+            verifyPrinciplePermissions(authentication, userId);
             MostWidelyUsedTag tag = orderService.findMostWidelyUsedTag(userId);
             tag.add(linkTo(methodOn(TagController.class).findById(tag.getMostWidelyUsedTag().getId())).withRel("Tag"));
             return tag;
         } catch (NoResultException ex) {
             throw new LocalizedControllerException("exception.message.40406", 40406, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private void verifyPrinciplePermissions(Authentication authentication, int id) {
+        JwtUser user = (JwtUser) authentication.getPrincipal();
+        if (user.getAuthorities().stream().map(String::valueOf).noneMatch(role -> role.equals("ROLE_ADMIN"))) {
+            if (user.getId() != id) {
+                throw new AccessDeniedException("access denied");
+            }
         }
     }
 }

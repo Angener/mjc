@@ -23,15 +23,6 @@ public class UserModelAssembler extends RepresentationModelAssemblerSupport<User
     public UserModel toModel(@NonNull User user) {
         UserModel userModel = instantiateModel(user);
 
-        userModel.add(linkTo(
-                methodOn(UserController.class)
-                        .findById(user.getId()))
-                        .withSelfRel(),
-                linkTo(
-                        methodOn(UserController.class)
-                                .getUserOrders(user.getId(), PageRequest.of(0, 10)))
-                        .withRel("orders"));
-
         userModel.setId(user.getId());
         userModel.setName(user.getName());
         userModel.setRoles(user.getRoles());

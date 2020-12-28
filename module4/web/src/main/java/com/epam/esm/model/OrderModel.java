@@ -1,6 +1,5 @@
 package com.epam.esm.model;
 
-import com.epam.esm.entity.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +23,6 @@ public class OrderModel extends RepresentationModel<OrderModel> {
     private int id;
     private ZonedDateTime orderDate;
     private BigDecimal orderCost;
-    private User user;
+    private UserModel userModel;
     private GiftCertificateModel certificate;
 }
