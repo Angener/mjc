@@ -51,12 +51,4 @@ public class UserServiceImplTest {
         assertEquals(Optional.of(users.get(0)), service.findById(anyInt()));
         verify(repository).findById(anyInt());
     }
-
-    @Test
-    public void save() {
-        when(repository.save(users.get(0))).thenReturn(users.get(0));
-
-        assertEquals(service.save(users.get(0)), users.get(0));
-        verify(repository).save(users.get(0));
-    }
 }
