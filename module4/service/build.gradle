@@ -1,0 +1,37 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.4.0' apply false
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+}
+
+sourceCompatibility = '1.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+dependencies {
+    compile 'com.google.guava:guava:30.0-jre'
+    compile 'io.jsonwebtoken:jjwt:0.9.1'
+    compile 'org.springframework.boot:spring-boot-starter-security'
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompile 'org.mockito:mockito-core:3.6.0'
+    testCompile 'org.mockito:mockito-junit-jupiter:3.6.0'
+    implementation project(':persistence')
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'default'
+}

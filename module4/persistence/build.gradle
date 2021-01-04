@@ -1,0 +1,49 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.4.0' apply false
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'jacoco'
+}
+
+sourceCompatibility = '1.8'
+
+dependencyManagement {
+    imports {
+        mavenBom SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    runtime 'org.postgresql:postgresql:42.2.18'
+    runtime 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.springframework.boot:spring-boot-starter-hateoas'
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'com.google.code.findbugs:annotations:3.0.1'
+    compile 'org.apache.commons:commons-text:1.9'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.11.3'
+    compile 'com.github.javafaker:javafaker:1.0.2'
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    compile 'org.mapstruct:mapstruct:1.4.1.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.1.Final'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testCompile 'org.mockito:mockito-core:3.6.0'
+    testImplementation 'com.h2database:h2:1.4.200'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'default'
+}
